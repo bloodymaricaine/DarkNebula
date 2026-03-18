@@ -120,8 +120,12 @@ function renderEpisodes(){
 function playVideo(i){
   const id=data[currentSeason][i];
   const iframe=document.getElementById("videoFrame");
-  if(currentSeason==="s1") iframe.src=`https://www.youtube.com/embed/${id}?autoplay=1`;
-  else iframe.src=`https://www.dailymotion.com/embed/video/${id}?autoplay=1`;
+  if(currentSeason==="s1") {
+    // 1. sezon videolarını 44. saniyeden başlat
+    iframe.src=`https://www.youtube.com/embed/${id}?autoplay=1&start=44`;
+  } else {
+    iframe.src=`https://www.dailymotion.com/embed/video/${id}?autoplay=1`;
+  }
   updateNavButtons();
 }
 
