@@ -27,10 +27,10 @@ header h1 {color:#e94560;font-size:28px;font-weight:bold;cursor:pointer;}
 
 <!-- Ana ekran sezonlar -->
 <div id="seasons">
-  <div class="season-card" style="background-image:url('https://i.imgur.com/L8otzmh.jpg');" onclick="openSeason('s1')">Metal Fusion</div>
-  <div class="season-card" style="background-image:url('https://i.imgur.com/epo5CCa.jpg');" onclick="openSeason('s2')">Metal Masters</div>
-  <div class="season-card" style="background-image:url('https://i.imgur.com/Ttv8Bg9.jpg');" onclick="openSeason('s3')">Metal Fury</div>
-  <div class="season-card" style="background-image:url('https://i.imgur.com/PeMQ2VF.jpg');" onclick="openSeason('s4')">Shogun Steel</div>
+  <div class="season-card" style="background-image:url('https://i.imgur.com/L8otzmh.jpg');" data-season="s1">Metal Fusion</div>
+  <div class="season-card" style="background-image:url('https://i.imgur.com/epo5CCa.jpg');" data-season="s2">Metal Masters</div>
+  <div class="season-card" style="background-image:url('https://i.imgur.com/Ttv8Bg9.jpg');" data-season="s3">Metal Fury</div>
+  <div class="season-card" style="background-image:url('https://i.imgur.com/PeMQ2VF.jpg');" data-season="s4">Shogun Steel</div>
 </div>
 
 <!-- Bölüm sayfası -->
@@ -54,8 +54,7 @@ const seasonData = {
     {title:"2. Bölüm", videoId:"xa2fu2s"}, 
     {title:"3. Bölüm", videoId:"xa2fu2u"}, 
     {title:"4. Bölüm", videoId:"xa2fu2y"}, 
-    {title:"5. Bölüm", videoId:"xa2fu2w"} 
-    // 6-39 bölümleri aynı formatta ekleyebilirsin
+    {title:"5. Bölüm", videoId:"xa2fu2w"}
   ],
   s4:[ {title:"1. Bölüm", videoId:"VIDEO_ID_7"}, {title:"2. Bölüm", videoId:"VIDEO_ID_8"} ]
 };
@@ -69,10 +68,10 @@ function openSeason(season){
   document.getElementById("seasons").style.display="none";
   document.getElementById("episodePage").style.display="block";
 
-  // Bölüm listesi ve player hazır
+  // Önce bölüm listesi render
   renderEpisodeList();
 
-  // Kaldığı yerden devam sorusu
+  // Kaldığın yerden devam sorusu
   if(savedProgress && savedProgress.season === season){
     if(confirm("KALDIĞIN YERDEN DEVAM ET? OK = DEVAM, CANCEL = BAŞTAN")){
       openEpisode(savedProgress.episode, savedProgress.time || 0);
@@ -100,8 +99,9 @@ function openEpisode(index, startTime=0){
     player.load(seasonData[currentSeason][index].videoId, {autoplay:true});
   }
 
-  // Başlangıç zamanı
-  setTimeout(()=>{if(startTime>0 && player) player.seek(startTime);},1000);
+  setTimeout(()=>{
+    if(startTime>0 && player) player.seek(startTime);
+  },1000);
 
   renderEpisodeList();
   updateControls();
@@ -139,6 +139,13 @@ function saveProgress(){
     }));
   }
 }
+
+// ---------------- Tüm sezon kartlarına tıklama olayı bağla ----------------
+document.querySelectorAll('.season-card').forEach(card=>{
+  card.addEventListener('click', ()=>{
+    openSeason(card.getAttribute('data-season'));
+  });
+});
 
 // ---------------- Başlangıç ----------------
 document.getElementById("seasons").style.display="grid";
