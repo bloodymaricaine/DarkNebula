@@ -6,39 +6,26 @@
 <title>Melflix</title>
 
 <style>
-body {margin:0;font-family:Arial;background:#0f172a;color:white;}
-header {text-align:center;padding:15px;background:#020617;font-size:28px;font-weight:bold;cursor:pointer;}
+body {margin:0;background:#0f172a;color:white;font-family:Arial;}
+header {text-align:center;padding:15px;background:#020617;font-size:28px;cursor:pointer;}
 
-#main {padding:20px;}
-.season-row {margin-bottom:40px;}
-.season-title {font-size:22px;margin-bottom:10px;}
-.slider {display:flex;overflow-x:auto;gap:15px;}
-
-.card {min-width:220px;height:320px;border-radius:12px;background-size:cover;cursor:pointer;position:relative;}
-.card-title {position:absolute;bottom:10px;left:10px;font-weight:bold;}
+.slider {display:flex;overflow-x:auto;gap:15px;padding:20px;}
+.card {min-width:200px;height:280px;border-radius:10px;background-size:cover;cursor:pointer;}
 
 #playerPage {display:none;padding:10px;}
-.video {width:100%;height:60vh;border:none;border-radius:10px;}
+.video {width:100%;height:60vh;border:none;}
 
-#episodes {display:flex;overflow-x:auto;gap:10px;margin-top:10px;padding:10px;background:#1e293b;border-radius:10px;}
-.ep {padding:10px 15px;background:#0f172a;border-radius:10px;cursor:pointer;}
-.active {border:2px solid #ff4d4d;}
-
-.overlayBtn {
+.overlay {
   position:absolute;
-  padding:12px 18px;
-  background:rgba(255,255,255,0.1);
-  backdrop-filter:blur(10px);
-  border:none;
+  padding:10px 15px;
+  background:rgba(0,0,0,0.5);
   border-radius:8px;
   color:white;
   cursor:pointer;
-  font-size:14px;
 }
 
-#skipBtn {left:20px;top:50%;transform:translateY(-50%);}
-#nextOverlay {right:20px;top:50%;transform:translateY(-50%);display:none;}
-
+#skipBtn {left:20px;top:50%;}
+#nextBtn {right:20px;top:50%;display:none;}
 </style>
 </head>
 
@@ -47,147 +34,90 @@ header {text-align:center;padding:15px;background:#020617;font-size:28px;font-we
 <header onclick="goHome()">Melflix</header>
 
 <div id="main">
-  <div class="season-row"><div class="season-title">Metal Fusion</div><div class="slider" id="s1-slider"></div></div>
-  <div class="season-row"><div class="season-title">Metal Masters</div><div class="slider" id="s2-slider"></div></div>
-  <div class="season-row"><div class="season-title">Metal Fury</div><div class="slider" id="s3-slider"></div></div>
-  <div class="season-row"><div class="season-title">Shogun Steel</div><div class="slider" id="s4-slider"></div></div>
+  <div class="slider" id="s1"></div>
 </div>
 
 <div id="playerPage">
   <div style="position:relative;">
-    <iframe id="videoFrame" class="video" allowfullscreen allow="autoplay"></iframe>
-
-    <button id="skipBtn" class="overlayBtn" onclick="skipIntro()">Intro Atla</button>
-    <button id="nextOverlay" class="overlayBtn" onclick="nextEpisode()">Sonraki Bölüm ▶</button>
+    <iframe id="video" class="video"></iframe>
+    <div id="skipBtn" class="overlay" onclick="skipIntro()">Intro Atla</div>
+    <div id="nextBtn" class="overlay" onclick="nextEpisode()">Sonraki ▶</div>
   </div>
-
-  <div id="episodes"></div>
 </div>
 
 <script>
-const data = {
-  s1: ["_JKNDCvPc3A","4jHoj5geuJ8","50jkNwbNYFs"],
-  s2: ["xb1","xb2"],
-  s3: ["xa2flcw","xa2fu2s"],
-  s4: ["xc1"]
-};
 
-const posters = {
-  s1:"https://i.imgur.com/L8otzmh.jpg",
-  s2:"https://i.imgur.com/epo5CCa.jpg",
-  s3:"https://i.imgur.com/Ttv8Bg9.jpg",
-  s4:"https://i.imgur.com/PeMQ2VF.jpg"
-};
+const videos = [
+"_JKNDCvPc3A","4jHoj5geuJ8","50jkNwbNYFs","rWOJMX9xDyA",
+"JVw2OrBg0Os","qCJhIAHU7c8","AjNAan3r_EQ","PBoW0shkDIo",
+"xBou90Yk1i4","ZWxmhgtYBx4","QVPvEd4N81Y","FTsaUUU_P3M"
+];
 
-let currentSeason="";
-let currentIndex=0;
-let timeChecker=null;
+let index=0;
+let timer;
 
 function init(){
-  for(let s in data){
-    const slider=document.getElementById(s+"-slider");
-    data[s].forEach((v,i)=>{
-      const c=document.createElement("div");
-      c.className="card";
-      c.style.backgroundImage=`url(${posters[s]})`;
-      c.innerHTML=`<div class="card-title">Bölüm ${i+1}</div>`;
-      c.onclick=()=>openSeason(s,i);
-      slider.appendChild(c);
-    });
-  }
-}
-
-function openSeason(s,i){
-  currentSeason=s;
-  currentIndex=i;
-
-  document.getElementById("main").style.display="none";
-  document.getElementById("playerPage").style.display="block";
-
-  renderEpisodes();
-  playVideo();
-}
-
-function renderEpisodes(){
-  const e=document.getElementById("episodes");
-  e.innerHTML="";
-  data[currentSeason].forEach((v,i)=>{
-    const el=document.createElement("div");
-    el.className="ep";
-    if(i===currentIndex) el.classList.add("active");
-    el.innerText="Bölüm "+(i+1);
-    el.onclick=()=>{currentIndex=i;playVideo();renderEpisodes();}
-    e.appendChild(el);
+  const s=document.getElementById("s1");
+  videos.forEach((v,i)=>{
+    const c=document.createElement("div");
+    c.className="card";
+    c.style.backgroundImage="url(https://i.imgur.com/L8otzmh.jpg)";
+    c.onclick=()=>openVideo(i);
+    s.appendChild(c);
   });
 }
 
-function playVideo(){
-  clearInterval(timeChecker);
+function openVideo(i){
+  index=i;
+  document.getElementById("main").style.display="none";
+  document.getElementById("playerPage").style.display="block";
+  play();
+}
 
-  const id=data[currentSeason][currentIndex];
-  const iframe=document.getElementById("videoFrame");
+function play(){
+  clearInterval(timer);
+
+  document.getElementById("video").src=
+  "https://www.youtube.com/embed/"+videos[index]+"?autoplay=1";
 
   document.getElementById("skipBtn").style.display="block";
-  document.getElementById("nextOverlay").style.display="none";
+  document.getElementById("nextBtn").style.display="none";
 
-  if(currentSeason==="s1"){
-    iframe.src=`https://www.youtube.com/embed/${id}?autoplay=1&enablejsapi=1`;
-  } else {
-    iframe.src=`https://www.dailymotion.com/embed/video/${id}?autoplay=1`;
-  }
+  let t=0;
 
-  let currentTime=0;
+  timer=setInterval(()=>{
+    t++;
 
-  timeChecker=setInterval(()=>{
-    currentTime+=1;
+    if(t>44) document.getElementById("skipBtn").style.display="none";
 
-    // 44 sn sonra intro gizle
-    if(currentTime>=44){
-      document.getElementById("skipBtn").style.display="none";
-    }
+    if(t>1239) document.getElementById("nextBtn").style.display="block";
 
-    // 20:39 = 1239 sn → sonraki bölüm butonu
-    if(currentTime>=1239){
-      document.getElementById("nextOverlay").style.display="block";
-    }
-
-    // video bitiş simülasyonu (yaklaşık 22 dk)
-    if(currentTime>=1320){
-      nextEpisode();
-    }
+    if(t>1320) nextEpisode();
 
   },1000);
 }
 
 function skipIntro(){
-  const id=data[currentSeason][currentIndex];
-  const iframe=document.getElementById("videoFrame");
-
-  if(currentSeason==="s1"){
-    iframe.src=`https://www.youtube.com/embed/${id}?autoplay=1&start=44`;
-  } else {
-    iframe.src=`https://www.dailymotion.com/embed/video/${id}?autoplay=1&start=44`;
-  }
-
-  document.getElementById("skipBtn").style.display="none";
+  document.getElementById("video").src=
+  "https://www.youtube.com/embed/"+videos[index]+"?autoplay=1&start=44";
 }
 
 function nextEpisode(){
-  if(currentIndex<data[currentSeason].length-1){
-    currentIndex++;
-    playVideo();
-    renderEpisodes();
+  if(index<videos.length-1){
+    index++;
+    play();
   }
 }
 
 function goHome(){
-  document.getElementById("playerPage").style.display="none";
   document.getElementById("main").style.display="block";
-  document.getElementById("videoFrame").src="";
-  clearInterval(timeChecker);
+  document.getElementById("playerPage").style.display="none";
+  document.getElementById("video").src="";
+  clearInterval(timer);
 }
 
 init();
+
 </script>
 
 </body>
