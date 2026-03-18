@@ -7,14 +7,12 @@
 
 <style>
 body{margin:0;background:#0b0f1a;color:#fff;font-family:sans-serif}
-header{position:fixed;width:100%;top:0;text-align:center;padding:15px;font-size:28px;background:#020617;cursor:pointer;z-index:10}
+header{position:fixed;width:100%;top:0;text-align:center;padding:15px;font-size:26px;background:#020617;cursor:pointer;z-index:10}
 
 .container{padding-top:80px}
-
 .row{margin:20px}
-.row h2{margin-bottom:10px}
-.slider{display:flex;overflow-x:auto;gap:15px}
-.card{min-width:220px;height:300px;border-radius:10px;background-size:cover;background-position:center;cursor:pointer}
+.slider{display:flex;gap:15px}
+.card{width:240px;height:320px;border-radius:12px;background-size:cover;cursor:pointer}
 
 #playerPage{display:none;padding-top:80px}
 .video{width:100%;height:60vh;border:none}
@@ -23,21 +21,23 @@ header{position:fixed;width:100%;top:0;text-align:center;padding:15px;font-size:
 position:fixed;
 right:0;
 top:80px;
-width:220px;
+width:230px;
 height:calc(100vh - 80px);
 overflow-y:auto;
 background:#020617;
 padding:10px
 }
-.ep{padding:8px;cursor:pointer;border-radius:5px}
+.ep{padding:10px;border-radius:6px;cursor:pointer}
 .ep.active{background:#334155}
 
 .overlay{
 position:absolute;
-padding:10px 15px;
-background:rgba(0,0,0,0.5);
-border-radius:8px;
-cursor:pointer
+padding:10px 18px;
+background:rgba(30,41,59,0.7);
+border-radius:10px;
+cursor:pointer;
+backdrop-filter:blur(5px);
+font-size:14px;
 }
 
 #skip{left:20px;top:50%}
@@ -53,24 +53,25 @@ cursor:pointer
 
 <div id="playerPage">
   <div style="position:relative">
-    <iframe id="video" class="video" allowfullscreen></iframe>
+    <iframe id="video" class="video" allow="autoplay" allowfullscreen></iframe>
+
     <div id="skip" class="overlay" onclick="skipIntro()">Intro Atla</div>
     <div id="next" class="overlay" onclick="nextEpisode()">Sonraki ▶</div>
   </div>
+
   <div id="episodes" class="episodes"></div>
 </div>
 
 <script>
 
-// SEZONLAR
 const data={
 s1:[
 "_JKNDCvPc3A","4jHoj5geuJ8","50jkNwbNYFs","rWOJMX9xDyA",
 "JVw2OrBg0Os","qCJhIAHU7c8","AjNAan3r_EQ"
 ],
-s2:["x7xyzab","x7xyzac","x7xyzad"], // örnek
+s2:["x7xyzab","x7xyzac"],
 s3:["xa2flcw","xa2fu2s","xa2fu2u","xa2fu2y","xa2fu2w"],
-s4:["x8abcd1","x8abcd2"]
+s4:["x8abcd1"]
 };
 
 const titles={
@@ -90,6 +91,7 @@ s4:"https://i.imgur.com/PeMQ2VF.jpg"
 let currentSeason=null;
 let currentEpisode=0;
 let timer;
+let currentTime=0;
 
 // ANA SAYFA
 function loadHome(){
@@ -99,26 +101,21 @@ main.innerHTML="";
 Object.keys(data).forEach(s=>{
 const row=document.createElement("div");
 row.className="row";
-
 row.innerHTML=`<h2>${titles[s]}</h2>`;
-
-const slider=document.createElement("div");
-slider.className="slider";
 
 const card=document.createElement("div");
 card.className="card";
 card.style.backgroundImage=`url(${images[s]})`;
 card.onclick=()=>openSeason(s);
 
-slider.appendChild(card);
-row.appendChild(slider);
+row.appendChild(card);
 main.appendChild(row);
 });
 }
 
-// SEZON AÇ
-function openSeason(season){
-currentSeason=season;
+// SEZON
+function openSeason(s){
+currentSeason=s;
 currentEpisode=0;
 
 document.getElementById("main").style.display="none";
@@ -128,35 +125,30 @@ loadEpisodes();
 play();
 }
 
-// BÖLÜMLER LİSTESİ
+// BÖLÜMLER
 function loadEpisodes(){
-const epDiv=document.getElementById("episodes");
-epDiv.innerHTML="";
+const ep=document.getElementById("episodes");
+ep.innerHTML="";
 
 data[currentSeason].forEach((v,i)=>{
 const d=document.createElement("div");
 d.className="ep"+(i===currentEpisode?" active":"");
 d.innerText="Bölüm "+(i+1);
-d.onclick=()=>{
-currentEpisode=i;
-play();
-};
-epDiv.appendChild(d);
+d.onclick=()=>{currentEpisode=i;play();}
+ep.appendChild(d);
 });
 }
 
-// VIDEO OYNAT
+// OYNAT
 function play(){
 clearInterval(timer);
+currentTime=0;
 
 const v=data[currentSeason][currentEpisode];
 
-let src="";
-if(currentSeason==="s1"){
-src=`https://www.youtube.com/embed/${v}?autoplay=1`;
-}else{
-src=`https://www.dailymotion.com/embed/video/${v}?autoplay=1`;
-}
+let src = currentSeason==="s1"
+? `https://www.youtube.com/embed/${v}?autoplay=1`
+: `https://www.dailymotion.com/embed/video/${v}?autoplay=1`;
 
 document.getElementById("video").src=src;
 
@@ -165,19 +157,29 @@ document.getElementById("next").style.display="none";
 
 loadEpisodes();
 
-// TIMER
-let t=0;
+// ZAMAN SİMÜLASYONU
 timer=setInterval(()=>{
-t++;
+currentTime++;
 
-if(t>44) document.getElementById("skip").style.display="none";
-if(t>1239) document.getElementById("next").style.display="block";
-if(t>1320) nextEpisode();
+// INTRO 44 sn sonra kaybolur
+if(currentTime>=44){
+document.getElementById("skip").style.display="none";
+}
+
+// 20:39 → NEXT ÇIKAR
+if(currentTime>=1239){
+document.getElementById("next").style.display="block";
+}
+
+// 22 dk → otomatik geç
+if(currentTime>=1320){
+nextEpisode();
+}
 
 },1000);
 }
 
-// INTRO ATLAMA
+// INTRO ATLAMA (video durmaz)
 function skipIntro(){
 const v=data[currentSeason][currentEpisode];
 
@@ -188,11 +190,13 @@ document.getElementById("video").src=
 document.getElementById("video").src=
 `https://www.dailymotion.com/embed/video/${v}?autoplay=1&start=44`;
 }
+
+document.getElementById("skip").style.display="none";
 }
 
 // SONRAKİ
 function nextEpisode(){
-if(currentEpisode<data[currentSeason].length-1){
+if(currentEpisode < data[currentSeason].length-1){
 currentEpisode++;
 play();
 }
