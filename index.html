@@ -25,7 +25,6 @@ header h1 {color:#e94560;font-size:28px;font-weight:bold;cursor:pointer;}
 
 <header><h1 id="logo">DarkNebula.net</h1></header>
 
-<!-- Ana ekran sezonlar -->
 <div id="seasons">
   <div class="season-card" data-season="s1" style="background-image:url('https://i.imgur.com/L8otzmh.jpg');">Metal Fusion</div>
   <div class="season-card" data-season="s2" style="background-image:url('https://i.imgur.com/epo5CCa.jpg');">Metal Masters</div>
@@ -33,7 +32,6 @@ header h1 {color:#e94560;font-size:28px;font-weight:bold;cursor:pointer;}
   <div class="season-card" data-season="s4" style="background-image:url('https://i.imgur.com/PeMQ2VF.jpg');">Shogun Steel</div>
 </div>
 
-<!-- Bölüm sayfası -->
 <div id="episodePage">
   <div class="videoContainer"><div id="player"></div></div>
   <div class="episodeControls">
@@ -45,24 +43,22 @@ header h1 {color:#e94560;font-size:28px;font-weight:bold;cursor:pointer;}
 
 <script src="https://api.dmcdn.net/all.js"></script>
 <script>
-// -------------- Bölüm verileri --------------
+let currentSeason="", currentEp=0, player=null;
+const savedProgress = JSON.parse(localStorage.getItem("darkNebula_currentEpisode")||"null");
+
 const seasonData = {
-  s1:[ {title:"1. Bölüm", videoId:"VIDEO_ID_1"}, {title:"2. Bölüm", videoId:"VIDEO_ID_2"} ],
-  s2:[ {title:"1. Bölüm", videoId:"VIDEO_ID_3"}, {title:"2. Bölüm", videoId:"VIDEO_ID_4"} ],
-  s3:[ 
+  s1:[{title:"1. Bölüm", videoId:"VIDEO_ID_1"},{title:"2. Bölüm", videoId:"VIDEO_ID_2"}],
+  s2:[{title:"1. Bölüm", videoId:"VIDEO_ID_3"},{title:"2. Bölüm", videoId:"VIDEO_ID_4"}],
+  s3:[
     {title:"1. Bölüm", videoId:"xa2flcw"}, 
     {title:"2. Bölüm", videoId:"xa2fu2s"}, 
     {title:"3. Bölüm", videoId:"xa2fu2u"}, 
     {title:"4. Bölüm", videoId:"xa2fu2y"}, 
-    {title:"5. Bölüm", videoId:"xa2fu2w"} 
+    {title:"5. Bölüm", videoId:"xa2fu2w"}
   ],
-  s4:[ {title:"1. Bölüm", videoId:"VIDEO_ID_7"}, {title:"2. Bölüm", videoId:"VIDEO_ID_8"} ]
+  s4:[{title:"1. Bölüm", videoId:"VIDEO_ID_7"},{title:"2. Bölüm", videoId:"VIDEO_ID_8"}]
 };
 
-let currentSeason="", currentEp=0, player=null;
-let savedProgress = JSON.parse(localStorage.getItem("darkNebula_currentEpisode")||"null");
-
-// -------------- Fonksiyonlar --------------
 function renderEpisodeList(){
   const list = document.getElementById("episodeList");
   list.innerHTML="";
@@ -82,27 +78,27 @@ function updateControls(){
 }
 
 function openEpisode(index,startTime=0){
-  currentEp = index;
+  currentEp=index;
   renderEpisodeList();
   updateControls();
 
-  // Player reset
-  document.getElementById("player").innerHTML = "";
-  player = new DM.player(document.getElementById("player"),{
-    video: seasonData[currentSeason][index].videoId,
-    width:"100%", height:"100%",
-    params:{autoplay:1,controls:1,quality:"720",logo:0}
-  });
+  document.getElementById("player").innerHTML="";
+  
+  DM.ready(function(){
+    player = new DM.player(document.getElementById("player"),{
+      video: seasonData[currentSeason][index].videoId,
+      width:"100%", height:"100%",
+      params:{autoplay:1,controls:1,quality:"720",logo:0}
+    });
+    
+    player.addEventListener('timeupdate', ()=>{
+      localStorage.setItem("darkNebula_currentEpisode", JSON.stringify({
+        season: currentSeason, episode: currentEp, time: player.currentTime
+      }));
+    });
 
-  player.addEventListener('timeupdate', ()=>{
-    localStorage.setItem("darkNebula_currentEpisode", JSON.stringify({
-      season: currentSeason, episode: currentEp, time: player.currentTime
-    }));
+    if(startTime>0) setTimeout(()=>{player.seek(startTime)},1000);
   });
-
-  if(startTime>0){
-    setTimeout(()=>{player.seek(startTime)},1000);
-  }
 }
 
 function openSeason(season){
@@ -123,7 +119,6 @@ function backToSeasons(){
   document.getElementById("seasons").style.display="grid";
 }
 
-// -------------- Event Binding --------------
 document.querySelectorAll('.season-card').forEach(card=>{
   card.addEventListener('click', ()=>openSeason(card.getAttribute('data-season')));
 });
@@ -133,10 +128,8 @@ document.getElementById("nextBtn").addEventListener('click', ()=>{ if(currentEp<
 
 document.getElementById("logo").addEventListener('click', backToSeasons);
 
-// -------------- Başlangıç --------------
 document.getElementById("seasons").style.display="grid";
 document.getElementById("episodePage").style.display="none";
 </script>
-
 </body>
 </html>
