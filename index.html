@@ -43,8 +43,8 @@ header h1 {color:#e94560;font-size:28px;font-weight:bold;cursor:pointer;}
 
 <script src="https://api.dmcdn.net/all.js"></script>
 <script>
-let currentSeason="", currentEp=0, player=null;
-const savedProgress = JSON.parse(localStorage.getItem("darkNebula_currentEpisode")||"null");
+let currentSeason = "", currentEp = 0, player = null;
+const savedProgress = JSON.parse(localStorage.getItem("darkNebula_currentEpisode") || "null");
 
 const seasonData = {
   s1:[{title:"1. Bölüm", videoId:"VIDEO_ID_1"},{title:"2. Bölüm", videoId:"VIDEO_ID_2"}],
@@ -59,12 +59,12 @@ const seasonData = {
   s4:[{title:"1. Bölüm", videoId:"VIDEO_ID_7"},{title:"2. Bölüm", videoId:"VIDEO_ID_8"}]
 };
 
-function renderEpisodeList(){
+function renderEpisodeList() {
   const list = document.getElementById("episodeList");
-  list.innerHTML="";
-  seasonData[currentSeason].forEach((ep,i)=>{
+  list.innerHTML = "";
+  seasonData[currentSeason].forEach((ep, i) => {
     const card = document.createElement("div");
-    card.className="episodeCard";
+    card.className = "episodeCard";
     if(i===currentEp) card.classList.add("activeEp");
     card.innerText = ep.title;
     card.onclick = ()=>openEpisode(i,0);
@@ -72,16 +72,17 @@ function renderEpisodeList(){
   });
 }
 
-function updateControls(){
+function updateControls() {
   document.getElementById("prevBtn").style.display = currentEp>0?"inline-block":"none";
   document.getElementById("nextBtn").style.display = currentEp<seasonData[currentSeason].length-1?"inline-block":"none";
 }
 
-function openEpisode(index,startTime=0){
+function openEpisode(index, startTime=0){
   currentEp=index;
   renderEpisodeList();
   updateControls();
 
+  // Player reset
   document.getElementById("player").innerHTML="";
   
   DM.ready(function(){
@@ -90,7 +91,7 @@ function openEpisode(index,startTime=0){
       width:"100%", height:"100%",
       params:{autoplay:1,controls:1,quality:"720",logo:0}
     });
-    
+
     player.addEventListener('timeupdate', ()=>{
       localStorage.setItem("darkNebula_currentEpisode", JSON.stringify({
         season: currentSeason, episode: currentEp, time: player.currentTime
@@ -102,11 +103,10 @@ function openEpisode(index,startTime=0){
 }
 
 function openSeason(season){
-  currentSeason = season;
+  currentSeason=season;
   document.getElementById("seasons").style.display="none";
   document.getElementById("episodePage").style.display="block";
-  renderEpisodeList();
-
+  
   if(savedProgress && savedProgress.season===season){
     if(confirm("KALDIĞIN YERDEN DEVAM ET? OK = DEVAM, CANCEL = BAŞTAN")){
       openEpisode(savedProgress.episode, savedProgress.time||0);
