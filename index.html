@@ -4,132 +4,152 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DarkNebula.net</title>
+
 <style>
-body {margin:0;font-family:Arial,sans-serif;background:#1a1a2e;color:#f5f5f5;}
-header {display:flex;justify-content:center;align-items:center;background:#162447;padding:15px 20px;box-shadow:0 4px 10px rgba(0,0,0,0.5);}
-header h1 {color:#e94560;font-size:28px;font-weight:bold;cursor:pointer;}
-#seasons {display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;padding:20px;}
-.season-card {background-size:cover;background-position:center;border-radius:20px;display:flex;justify-content:center;align-items:center;font-size:22px;font-weight:bold;cursor:pointer;text-align:center;color:#fff;box-shadow:0 4px 15px rgba(233,69,96,0.4);transition: transform 0.3s, box-shadow 0.3s;text-shadow:2px 2px 6px rgba(0,0,0,0.7);height:180px;}
-.season-card:hover {transform:scale(1.05);box-shadow:0 8px 25px rgba(233,69,96,0.7);}
-#episodePage {display:none;padding:10px;}
-.videoContainer {position:relative;width:100%;padding-top:56.25%;}
-#player {position:absolute;top:0;left:0;width:100%;height:100%;border-radius:10px;}
-.episodeControls {display:flex;justify-content:space-between;margin:10px 0;}
-.episodeControls button {background:#e94560;border:none;padding:8px 12px;border-radius:8px;color:#f5f5f5;font-weight:bold;cursor:pointer;}
-#episodeList {display:flex;overflow-x:auto;gap:10px;padding:10px;}
-.episodeCard {padding:8px 12px;border-radius:8px;background:#333;cursor:pointer;white-space:nowrap;flex:0 0 auto;}
-.episodeCard.activeEp {border:2px solid #e94560;font-weight:bold;color:#e94560;}
+body {
+  margin:0;
+  font-family:Arial;
+  background:#0f172a;
+  color:white;
+}
+
+header {
+  text-align:center;
+  padding:15px;
+  background:#020617;
+  font-size:26px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+#seasons {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:20px;
+  padding:20px;
+}
+
+.card {
+  height:160px;
+  border-radius:20px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:22px;
+  font-weight:bold;
+  cursor:pointer;
+  background-size:cover;
+  background-position:center;
+  box-shadow:0 5px 20px rgba(0,0,0,0.5);
+}
+
+#playerPage {
+  display:none;
+  padding:10px;
+}
+
+.video {
+  width:100%;
+  height:60vh;
+}
+
+#episodes {
+  display:flex;
+  overflow-x:auto;
+  gap:10px;
+  margin-top:10px;
+}
+
+.ep {
+  background:#1e293b;
+  padding:10px;
+  border-radius:10px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+
+.active {
+  border:2px solid red;
+}
 </style>
 </head>
+
 <body>
 
-<header><h1 id="logo">DarkNebula.net</h1></header>
+<header onclick="goHome()">DarkNebula.net</header>
 
 <div id="seasons">
-  <div class="season-card" data-season="s1" style="background-image:url('https://i.imgur.com/L8otzmh.jpg');">Metal Fusion</div>
-  <div class="season-card" data-season="s2" style="background-image:url('https://i.imgur.com/epo5CCa.jpg');">Metal Masters</div>
-  <div class="season-card" data-season="s3" style="background-image:url('https://i.imgur.com/Ttv8Bg9.jpg');">Metal Fury</div>
-  <div class="season-card" data-season="s4" style="background-image:url('https://i.imgur.com/PeMQ2VF.jpg');">Shogun Steel</div>
+  <div class="card" onclick="openSeason('s1')" style="background-image:url('https://i.imgur.com/L8otzmh.jpg')">Metal Fusion</div>
+  <div class="card" onclick="openSeason('s2')" style="background-image:url('https://i.imgur.com/epo5CCa.jpg')">Metal Masters</div>
+  <div class="card" onclick="openSeason('s3')" style="background-image:url('https://i.imgur.com/Ttv8Bg9.jpg')">Metal Fury</div>
+  <div class="card" onclick="openSeason('s4')" style="background-image:url('https://i.imgur.com/PeMQ2VF.jpg')">Shogun Steel</div>
 </div>
 
-<div id="episodePage">
-  <div class="videoContainer"><div id="player"></div></div>
-  <div class="episodeControls">
-    <button id="prevBtn">⬅ Önceki</button>
-    <button id="nextBtn">Sonraki ➡</button>
-  </div>
-  <div id="episodeList"></div>
+<div id="playerPage">
+  <iframe id="videoFrame" class="video" frameborder="0" allowfullscreen allow="autoplay"></iframe>
+
+  <div id="episodes"></div>
 </div>
 
-<script src="https://api.dmcdn.net/all.js"></script>
 <script>
-let currentSeason = "", currentEp = 0, player = null;
-const savedProgress = JSON.parse(localStorage.getItem("darkNebula_currentEpisode") || "null");
 
-const seasonData = {
-  s1:[{title:"1. Bölüm", videoId:"VIDEO_ID_1"},{title:"2. Bölüm", videoId:"VIDEO_ID_2"}],
-  s2:[{title:"1. Bölüm", videoId:"VIDEO_ID_3"},{title:"2. Bölüm", videoId:"VIDEO_ID_4"}],
-  s3:[
-    {title:"1. Bölüm", videoId:"xa2flcw"}, 
-    {title:"2. Bölüm", videoId:"xa2fu2s"}, 
-    {title:"3. Bölüm", videoId:"xa2fu2u"}, 
-    {title:"4. Bölüm", videoId:"xa2fu2y"}, 
-    {title:"5. Bölüm", videoId:"xa2fu2w"}
-  ],
-  s4:[{title:"1. Bölüm", videoId:"VIDEO_ID_7"},{title:"2. Bölüm", videoId:"VIDEO_ID_8"}]
+let currentSeason = "";
+let currentIndex = 0;
+
+const data = {
+  s3: [
+    "xa2flcw",
+    "xa2fu2s",
+    "xa2fu2u",
+    "xa2fu2y",
+    "xa2fu2w"
+  ]
 };
 
-function renderEpisodeList() {
-  const list = document.getElementById("episodeList");
-  list.innerHTML = "";
-  seasonData[currentSeason].forEach((ep, i) => {
-    const card = document.createElement("div");
-    card.className = "episodeCard";
-    if(i===currentEp) card.classList.add("activeEp");
-    card.innerText = ep.title;
-    card.onclick = ()=>openEpisode(i,0);
-    list.appendChild(card);
-  });
-}
-
-function updateControls() {
-  document.getElementById("prevBtn").style.display = currentEp>0?"inline-block":"none";
-  document.getElementById("nextBtn").style.display = currentEp<seasonData[currentSeason].length-1?"inline-block":"none";
-}
-
-function openEpisode(index, startTime=0){
-  currentEp=index;
-  renderEpisodeList();
-  updateControls();
-
-  // Player reset
-  document.getElementById("player").innerHTML="";
-  
-  DM.ready(function(){
-    player = new DM.player(document.getElementById("player"),{
-      video: seasonData[currentSeason][index].videoId,
-      width:"100%", height:"100%",
-      params:{autoplay:1,controls:1,quality:"720",logo:0}
-    });
-
-    player.addEventListener('timeupdate', ()=>{
-      localStorage.setItem("darkNebula_currentEpisode", JSON.stringify({
-        season: currentSeason, episode: currentEp, time: player.currentTime
-      }));
-    });
-
-    if(startTime>0) setTimeout(()=>{player.seek(startTime)},1000);
-  });
-}
-
 function openSeason(season){
-  currentSeason=season;
-  document.getElementById("seasons").style.display="none";
-  document.getElementById("episodePage").style.display="block";
-  
-  if(savedProgress && savedProgress.season===season){
-    if(confirm("KALDIĞIN YERDEN DEVAM ET? OK = DEVAM, CANCEL = BAŞTAN")){
-      openEpisode(savedProgress.episode, savedProgress.time||0);
-    } else openEpisode(0,0);
-  } else openEpisode(0,0);
+  currentSeason = season;
+  currentIndex = 0;
+
+  document.getElementById("seasons").style.display = "none";
+  document.getElementById("playerPage").style.display = "block";
+
+  renderEpisodes();
+  playVideo(0);
 }
 
-function backToSeasons(){
-  document.getElementById("episodePage").style.display="none";
-  document.getElementById("seasons").style.display="grid";
+function renderEpisodes(){
+  const container = document.getElementById("episodes");
+  container.innerHTML = "";
+
+  data[currentSeason].forEach((vid,i)=>{
+    const el = document.createElement("div");
+    el.className = "ep";
+    if(i === currentIndex) el.classList.add("active");
+
+    el.innerText = "Bölüm " + (i+1);
+
+    el.onclick = () => {
+      currentIndex = i;
+      playVideo(i);
+      renderEpisodes();
+    };
+
+    container.appendChild(el);
+  });
 }
 
-document.querySelectorAll('.season-card').forEach(card=>{
-  card.addEventListener('click', ()=>openSeason(card.getAttribute('data-season')));
-});
+function playVideo(i){
+  const id = data[currentSeason][i];
+  document.getElementById("videoFrame").src =
+    "https://www.dailymotion.com/embed/video/" + id + "?autoplay=1";
+}
 
-document.getElementById("prevBtn").addEventListener('click', ()=>{ if(currentEp>0) openEpisode(currentEp-1); });
-document.getElementById("nextBtn").addEventListener('click', ()=>{ if(currentEp<seasonData[currentSeason].length-1) openEpisode(currentEp+1); });
+function goHome(){
+  document.getElementById("playerPage").style.display = "none";
+  document.getElementById("seasons").style.display = "grid";
+}
 
-document.getElementById("logo").addEventListener('click', backToSeasons);
-
-document.getElementById("seasons").style.display="grid";
-document.getElementById("episodePage").style.display="none";
 </script>
+
 </body>
 </html>
