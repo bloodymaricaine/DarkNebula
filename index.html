@@ -4,34 +4,54 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Melflix</title>
+
 <style>
-body{margin:0;background:#0b0f1a;color:#fff;font-family:sans-serif;overflow-x:hidden;}
-header{position:fixed;width:100%;top:0;text-align:center;padding:15px;font-size:26px;background:#020617;cursor:pointer;z-index:10;box-shadow:0 2px 6px rgba(0,0,0,0.5);}
+body{margin:0;background:#0b0f1a;color:#fff;font-family:sans-serif;}
+header{position:fixed;width:100%;top:0;text-align:center;padding:15px;font-size:26px;background:#020617;cursor:pointer;z-index:10;}
 .container{padding-top:80px;}
 .row{margin:20px;}
-.card{width:260px;height:340px;border-radius:12px;background-size:cover;background-position:center;cursor:pointer;transition:0.3s;box-shadow:0 4px 15px rgba(0,0,0,0.4);}
-.card:hover{transform:scale(1.05);}
-.row h2{margin:0 0 10px 0;font-size:20px;}
-#playerPage{display:none;padding-top:80px;display:flex;flex-wrap:wrap;}
-.videoContainer{flex:1;position:relative;min-width:320px;}
-.videoContainer iframe{width:100%;height:75vh;border-radius:12px;}
-.episodes{width:260px;height:calc(100vh - 80px);overflow-y:auto;background:#020617;padding:10px;scrollbar-width:thin;scrollbar-color:#334155 #020617;}
-.episodes::-webkit-scrollbar{width:8px;}
-.episodes::-webkit-scrollbar-track{background:#020617;border-radius:6px;}
-.episodes::-webkit-scrollbar-thumb{background:#334155;border-radius:6px;}
-.ep{padding:10px;border-radius:6px;cursor:pointer;margin-bottom:5px;transition:0.2s;}
-.ep:hover{background:#44556b;}
-.ep.active{background:#334155;color:#fff;font-weight:bold;}
-.overlay{position:absolute;padding:10px 16px;background:rgba(30,41,59,0.8);border-radius:10px;cursor:pointer;backdrop-filter:blur(5px);font-size:14px;z-index:9999;transition:0.2s;}
-.overlay:hover{background:rgba(50,61,79,0.9);}
-#skip{left:20px;top:50%;transform:translateY(-50%);display:none;}
-#next{right:50%;top:50%;transform:translate(50%, -50%);display:none;}
-@media(max-width:768px){.videoContainer{min-width:100%;}}
+.card{width:260px;height:340px;border-radius:12px;background-size:cover;background-position:center;cursor:pointer;}
+#playerPage{display:none;padding-top:80px;}
+.videoContainer{
+  width:100%;
+  position:relative;
+  aspect-ratio:16/9;
+  background:black;
+}
+.videoContainer iframe{
+  width:100%;
+  height:100%;
+}
+.episodes{
+  display:flex;
+  overflow-x:auto;
+  gap:10px;
+  padding:10px;
+}
+.ep{
+  background:#1e293b;
+  padding:10px;
+  border-radius:8px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.overlay{
+  position:absolute;
+  padding:10px;
+  background:#000a;
+  cursor:pointer;
+}
+#skip{left:10px;top:50%;}
+#next{right:10px;top:50%;}
 </style>
 </head>
+
 <body>
+
 <header onclick="goHome()">Melflix</header>
+
 <div id="main" class="container"></div>
+
 <div id="playerPage">
   <div class="videoContainer" id="videoContainer"></div>
   <div id="skip" class="overlay" onclick="skipIntro()">Intro Atla</div>
@@ -40,111 +60,156 @@ header{position:fixed;width:100%;top:0;text-align:center;padding:15px;font-size:
 </div>
 
 <script src="https://www.youtube.com/iframe_api"></script>
+
 <script>
+let ytReady=false;
+function onYouTubeIframeAPIReady(){ ytReady=true; }
+
 const data={
-s1:["_JKNDCvPc3A","4jHoj5geuJ8","50jkNwbNYFs"],
-s2:[], 
-s3:["xa2flcw","xa2fu2s","xa2fu2u"],
-s4:[]
+s1:[
+"_JKNDCvPc3A","4jHoj5geuJ8","50jkNwbNYFs",
+"rWOJMX9xDyA","JVw2OrBg0Os","qCJhIAHU7c8"
+],
+s3:["xa2flcw","xa2fu2s","xa2fu2u"]
 };
-const titles={s1:"Metal Fusion",s2:"Metal Masters",s3:"Metal Fury",s4:"Shogun Steel"};
-const images={s1:"https://i.imgur.com/L8otzmh.jpg",s2:"https://i.imgur.com/epo5CCa.jpg",s3:"https://i.imgur.com/Ttv8Bg9.jpg",s4:"https://i.imgur.com/PeMQ2VF.jpg"};
 
-let currentSeason=null,currentEpisode=0,currentTime=0,player=null,timer=null,started=false;
+const titles={s1:"Metal Fusion",s3:"Metal Fury"};
+const images={
+s1:"https://i.imgur.com/L8otzmh.jpg",
+s3:"https://i.imgur.com/Ttv8Bg9.jpg"
+};
 
+let currentSeason=null;
+let currentEpisode=0;
+let currentTime=0;
+let player=null;
+let timer=null;
+
+/* HOME */
 function loadHome(){
-  const main=document.getElementById("main"); main.innerHTML="";
+  const main=document.getElementById("main");
+  main.innerHTML="";
   Object.keys(data).forEach(s=>{
-    if(data[s].length===0) return; // boş sezonları gösterme
-    const row=document.createElement("div"); row.className="row";
-    const title=document.createElement("h2"); title.innerText=titles[s];
-    const card=document.createElement("div"); card.className="card"; card.style.backgroundImage=`url(${images[s]})`;
-    card.onclick=()=>openSeason(s);
-    row.appendChild(title); row.appendChild(card); main.appendChild(row);
+    const row=document.createElement("div");
+    row.className="row";
+    row.innerHTML=`
+      <h2>${titles[s]}</h2>
+      <div class="card" style="background-image:url(${images[s]})"
+      onclick="openSeason('${s}')"></div>`;
+    main.appendChild(row);
   });
 }
 
+/* OPEN */
 function openSeason(s){
-  currentSeason=s; currentEpisode=0; currentTime=0; started=false;
+  currentSeason=s;
+  currentEpisode=0;
+  currentTime=0;
+
   document.getElementById("main").style.display="none";
-  document.getElementById("playerPage").style.display="flex";
-  loadEpisodes(); loadVideo();
+  document.getElementById("playerPage").style.display="block";
+
+  loadEpisodes();
+  loadVideo();
 }
 
+/* EPISODES */
 function loadEpisodes(){
-  const ep=document.getElementById("episodes"); ep.innerHTML="";
+  const el=document.getElementById("episodes");
+  el.innerHTML="";
   data[currentSeason].forEach((v,i)=>{
     const d=document.createElement("div");
-    d.className="ep"+(i===currentEpisode?" active":"");
+    d.className="ep";
     d.innerText="Bölüm "+(i+1);
-    d.onclick=()=>{currentEpisode=i; currentTime=0; started=false; loadVideo();}
-    ep.appendChild(d);
+    d.onclick=()=>{
+      currentEpisode=i;
+      currentTime=0;
+      loadVideo();
+    };
+    el.appendChild(d);
   });
 }
 
-function onYouTubeIframeAPIReady(){ if(currentSeason==="s1") loadVideo(); }
-
+/* VIDEO */
 function loadVideo(){
   clearInterval(timer);
-  const container=document.getElementById("videoContainer");
-  container.innerHTML="";
+
+  const box=document.getElementById("videoContainer");
+  box.innerHTML="";
+
   const v=data[currentSeason][currentEpisode];
 
-  if(currentSeason==="s1"){ 
-    if(player) player.destroy();
-    player=new YT.Player('videoContainer',{
-      width:'100%', height:'75vh', videoId:v,
-      playerVars:{autoplay:1,start:currentTime,rel:0,modestbranding:1},
-      events:{'onReady':()=>{player.seekTo(currentTime,true); player.playVideo(); startTimer();}}
-    });
-  } else {
-    const iframe=document.createElement("iframe");
-    iframe.src=`https://www.dailymotion.com/embed/video/${v}?autoplay=1&start=${currentTime}`;
-    iframe.allow="autoplay; fullscreen";
-    iframe.className="video";
-    container.appendChild(iframe);
-    player=null; startTimer();
-  }
+  if(currentSeason==="s1"){
+    if(!ytReady){
+      setTimeout(loadVideo,500);
+      return;
+    }
 
-  document.getElementById("skip").style.display="none";
-  document.getElementById("next").style.display="none";
-  loadEpisodes();
+    player=new YT.Player('videoContainer',{
+      videoId:v,
+      playerVars:{autoplay:1,start:currentTime},
+      events:{
+        onReady:()=>{
+          player.playVideo();
+          startTimer();
+        }
+      }
+    });
+
+  }else{
+    box.innerHTML=`<iframe src="https://www.dailymotion.com/embed/video/${v}?autoplay=1"></iframe>`;
+    player=null;
+    startTimer();
+  }
 }
 
+/* TIMER */
 function startTimer(){
   clearInterval(timer);
   timer=setInterval(()=>{
-    if(player && player.getCurrentTime){currentTime=Math.floor(player.getCurrentTime());}
-    else currentTime+=1;
-    if(currentTime>1 && !started){started=true; document.getElementById("skip").style.display="block";}
-    if(currentTime>=44) document.getElementById("skip").style.display="none";
-    if(currentTime>=1230) document.getElementById("next").style.display="block";
-    if(currentTime>=1320) nextEpisode();
+    if(player && player.getCurrentTime){
+      currentTime=Math.floor(player.getCurrentTime());
+    }else{
+      currentTime++;
+    }
+
+    if(currentTime>1) skip.style.display="block";
+    if(currentTime>=44) skip.style.display="none";
+    if(currentTime>=1230) next.style.display="block";
   },1000);
 }
 
+/* SKIP */
 function skipIntro(){
   currentTime=44;
-  if(player && player.seekTo){player.seekTo(currentTime,true); player.playVideo();}
-  document.getElementById("skip").style.display="none";
+  if(player) player.seekTo(44,true);
 }
 
+/* NEXT */
 function nextEpisode(){
-  if(currentEpisode<data[currentSeason].length-1){
-    currentEpisode++; currentTime=0; started=false; loadVideo();
+  if(currentEpisode < data[currentSeason].length-1){
+    currentEpisode++;
+    currentTime=0;
+    loadVideo();
   }
 }
 
+/* HOME */
 function goHome(){
   document.getElementById("main").style.display="block";
   document.getElementById("playerPage").style.display="none";
-  const container=document.getElementById("videoContainer");
-  if(player){player.destroy(); player=null;}
-  container.innerHTML="";
+
+  if(player){
+    player.destroy();
+    player=null;
+  }
+
+  document.getElementById("videoContainer").innerHTML="";
   clearInterval(timer);
 }
 
 loadHome();
 </script>
+
 </body>
 </html>
