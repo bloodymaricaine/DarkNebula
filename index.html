@@ -5,28 +5,38 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DarkNebula.net - Beyblade Arena</title>
 <style>
+/* ---------------- Temel ---------------- */
 body {margin:0; font-family:'Arial', sans-serif; background:#1a1a2e; color:#f5f5f5;}
 header {display:flex; justify-content:space-between; align-items:center; background:#162447; padding:15px 20px; box-shadow:0 4px 10px rgba(0,0,0,0.5);}
 header h1 {color:#e94560; font-size:26px; font-weight:bold;}
 .toggle {cursor:pointer; background:#e94560; border:none; padding:8px 14px; border-radius:12px; color:#f5f5f5; font-weight:bold; font-size:14px;}
-#seasons {display:grid; grid-template-columns: repeat(2,1fr); grid-template-rows: repeat(2,1fr); gap:20px; padding:20px; height:calc(100vh - 70px);}
+
+/* ---------------- Ana ekran ---------------- */
+#seasons {
+  display:grid;
+  grid-template-columns: repeat(auto-fit,minmax(160px,1fr));
+  gap:15px;
+  padding:20px;
+}
 .season-card {
-    background-size:cover;
-    background-position:center;
-    border-radius:20px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    font-size:22px;
-    font-weight:bold;
-    cursor:pointer;
-    text-align:center;
-    color:#f5f5f5;
-    box-shadow:0 4px 15px rgba(233,69,96,0.4);
-    transition: transform 0.3s, box-shadow 0.3s;
-    text-shadow: 2px 2px 6px rgba(0,0,0,0.7);
+  background-size:cover;
+  background-position:center;
+  border-radius:20px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:20px;
+  font-weight:bold;
+  cursor:pointer;
+  text-align:center;
+  color:#fff;
+  box-shadow:0 4px 15px rgba(233,69,96,0.4);
+  transition: transform 0.3s, box-shadow 0.3s;
+  text-shadow: 2px 2px 6px rgba(0,0,0,0.7);
 }
 .season-card:hover {transform:scale(1.05); box-shadow:0 8px 25px rgba(233,69,96,0.7);}
+
+/* ---------------- Bölümler ---------------- */
 #episodes {display:none; padding:20px;}
 .back {margin-bottom:15px; padding:12px 18px; background:#e94560; color:#f5f5f5; border:none; border-radius:12px; cursor:pointer; font-weight:bold; font-size:14px;}
 .container {display:grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap:15px;}
@@ -34,8 +44,30 @@ header h1 {color:#e94560; font-size:26px; font-weight:bold;}
 .card:hover {transform:scale(1.05); box-shadow:0 6px 20px rgba(233,69,96,0.6);}
 .card img {width:100%; height:150px; object-fit:cover; border-radius:10px 10px 0 0;}
 .card h3 {padding:10px; font-size:14px; text-align:center; color:#f5f5f5;}
-.modal {display:none; position:fixed; width:100%; height:100%; background:rgba(0,0,0,0.95); justify-content:center; align-items:center; z-index:999;}
-.modal iframe {width:90%; height:60%; border:none; border-radius:15px;}
+
+/* ---------------- Modal Video ---------------- */
+.modal {
+  display:none;
+  position:fixed;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.95);
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+.modal iframe {
+  width:90%;
+  height:50vw; /* 16:9 oranı */
+  max-height:90vh;
+  border:none;
+  border-radius:15px;
+}
+@media (orientation: landscape){
+  .modal iframe {width:auto; height:100vh;}
+}
+
+/* ---------------- Light Mode ---------------- */
 body.light {background:#f5f5f5; color:#111;}
 body.light header {background:#dfe6e9;}
 body.light .toggle {color:#111; background:#e94560;}
@@ -51,6 +83,7 @@ body.light .back {background:#162447; color:#f5f5f5;}
 <button class="toggle" onclick="toggleMode()">🌙/☀️</button>
 </header>
 
+<!-- Ana Ekran: 4 Sezon -->
 <div id="seasons">
 <div class="season-card" style="background-image:url('https://i.imgur.com/L8otzmh.jpg');" onclick="openSeason('s1')">Metal Fusion</div>
 <div class="season-card" style="background-image:url('https://i.imgur.com/epo5CCa.jpg');" onclick="openSeason('s2')">Metal Masters</div>
@@ -58,16 +91,19 @@ body.light .back {background:#162447; color:#f5f5f5;}
 <div class="season-card" style="background-image:url('https://i.imgur.com/PeMQ2VF.jpg');" onclick="openSeason('s4')">Shogun Steel</div>
 </div>
 
+<!-- Bölümler -->
 <div id="episodes">
 <button class="back" onclick="goBack()">⬅ Geri</button>
 <div class="container" id="episodeList"></div>
 </div>
 
+<!-- Video Modal -->
 <div class="modal" id="videoModal" onclick="closeVideo()">
 <iframe id="videoFrame" src="" allowfullscreen></iframe>
 </div>
 
 <script>
+// ---------------- Bölüm verileri ----------------
 const data = {
 s1:[
     {title:"Metal Fusion 1. Bölüm", link:"https://www.dailymotion.com/embed/video/VIDEO_ID_1", image:"https://i.imgur.com/10.jpg"},
@@ -90,21 +126,40 @@ s4:[
 ]
 };
 
+// ---------------- Fonksiyonlar ----------------
 function openSeason(season){
     document.getElementById("seasons").style.display="none";
     document.getElementById("episodes").style.display="block";
-    let list=document.getElementById("episodeList");
+    const list=document.getElementById("episodeList");
     list.innerHTML="";
     data[season].forEach(ep=>{
-        list.innerHTML+=`<div class="card" onclick="openVideo('${ep.link}')">
+        list.innerHTML+=`
+        <div class="card" onclick="openVideo('${ep.link}')">
             <img src="${ep.image}">
             <h3>${ep.title}</h3>
         </div>`;
     });
 }
-function goBack(){document.getElementById("episodes").style.display="none";document.getElementById("seasons").style.display="grid";}
-function openVideo(link){document.getElementById("videoModal").style.display="flex";document.getElementById("videoFrame").src=link;}
-function closeVideo(){document.getElementById("videoModal").style.display="none";document.getElementById("videoFrame").src="";}
+
+function goBack(){
+    document.getElementById("episodes").style.display="none";
+    document.getElementById("seasons").style.display="grid";
+}
+
+function openVideo(link){
+    const modal=document.getElementById("videoModal");
+    const frame=document.getElementById("videoFrame");
+    frame.src=link+"?autoplay=1";
+    modal.style.display="flex";
+}
+
+function closeVideo(){
+    const modal=document.getElementById("videoModal");
+    const frame=document.getElementById("videoFrame");
+    frame.src="";
+    modal.style.display="none";
+}
+
 function toggleMode(){document.body.classList.toggle("light");}
 </script>
 
