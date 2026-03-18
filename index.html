@@ -3,88 +3,147 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DarkNebula.net</title>
+<title>Melflix</title>
 <style>
-body {margin:0;font-family:Arial;background:#0f172a;color:white;}
-header {text-align:center;padding:15px;background:#020617;font-size:26px;font-weight:bold;cursor:pointer;}
-#seasons {display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;padding:20px;}
-.card {height:160px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:bold;cursor:pointer;background-size:cover;background-position:center;box-shadow:0 5px 20px rgba(0,0,0,0.5);}
-#playerPage {display:none;padding:10px;position:relative;}
-.video {width:100%;height:60vh;}
-#episodes {display:flex;overflow-x:auto;gap:10px;margin-top:10px;padding:10px 0;background:#1e293b;border-radius:10px;}
+body {margin:0;font-family:Arial;background:#0f172a;color:white;overflow-x:hidden;}
+header {text-align:center;padding:15px;background:#020617;font-size:28px;font-weight:bold;cursor:pointer;position:sticky;top:0;z-index:100;}
+#main {padding:20px;}
+.season-row {margin-bottom:40px;}
+.season-title {font-size:22px;font-weight:bold;margin-bottom:10px;}
+.slider {display:flex;overflow-x:auto;gap:15px;scroll-behavior:smooth;padding-bottom:10px;}
+.slider::-webkit-scrollbar {height:8px;}
+.slider::-webkit-scrollbar-thumb {background:#555;border-radius:4px;}
+.card {min-width:220px;height:320px;border-radius:10px;background-size:cover;background-position:center;cursor:pointer;flex-shrink:0;position:relative;box-shadow:0 5px 20px rgba(0,0,0,0.5);}
+.card-title {position:absolute;bottom:10px;left:10px;font-weight:bold;text-shadow:1px 1px 5px black;}
+#playerPage {display:none;padding:10px;}
+.video {width:100%;height:60vh;border:none;border-radius:10px;}
+#episodes {display:flex;overflow-x:auto;gap:10px;margin-top:10px;padding:10px;background:#1e293b;border-radius:10px;}
 .ep {padding:10px 15px;background:#0f172a;border-radius:10px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
 .active {border:2px solid red;}
+.nav-buttons {display:flex;justify-content:space-between;margin-top:10px;}
+.nav-buttons button {padding:10px 15px;background:#1e293b;color:white;border:none;border-radius:5px;cursor:pointer;}
+.nav-buttons button:disabled {opacity:0.5;cursor:not-allowed;}
 </style>
 </head>
 <body>
 
-<header onclick="goHome()">DarkNebula.net</header>
+<header onclick="goHome()">Melflix</header>
 
-<div id="seasons">
-  <div class="card" onclick="openSeason('s1')" style="background-image:url('https://i.imgur.com/L8otzmh.jpg')">Metal Fusion</div>
-  <div class="card" onclick="openSeason('s2')" style="background-image:url('https://i.imgur.com/epo5CCa.jpg')">Metal Masters</div>
-  <div class="card" onclick="openSeason('s3')" style="background-image:url('https://i.imgur.com/Ttv8Bg9.jpg')">Metal Fury</div>
-  <div class="card" onclick="openSeason('s4')" style="background-image:url('https://i.imgur.com/PeMQ2VF.jpg')">Shogun Steel</div>
+<div id="main">
+  <div class="season-row">
+    <div class="season-title">Metal Fusion</div>
+    <div class="slider" id="s1-slider"></div>
+  </div>
+  <div class="season-row">
+    <div class="season-title">Metal Masters</div>
+    <div class="slider" id="s2-slider"></div>
+  </div>
+  <div class="season-row">
+    <div class="season-title">Metal Fury</div>
+    <div class="slider" id="s3-slider"></div>
+  </div>
+  <div class="season-row">
+    <div class="season-title">Shogun Steel</div>
+    <div class="slider" id="s4-slider"></div>
+  </div>
 </div>
 
 <div id="playerPage">
-  <iframe id="videoFrame" class="video" frameborder="0" allowfullscreen allow="autoplay"></iframe>
+  <iframe id="videoFrame" class="video" allowfullscreen allow="autoplay"></iframe>
   <div id="episodes"></div>
+  <div class="nav-buttons">
+    <button id="prevBtn" onclick="prevEpisode()">Önceki Bölüm</button>
+    <button id="nextBtn" onclick="nextEpisode()">Sonraki Bölüm</button>
+  </div>
 </div>
 
 <script>
+const data = {
+  s1: [
+    "_JKNDCvPc3A","4jHoj5geuJ8","50jkNwbNYFs","rWOJMX9xDyA","JVw2OrBg0Os","qCJhIAHU7c8","AjNAan3r_EQ","PBoW0shkDIo","xBou90Yk1i4","xBou90Yk1i4","ZWxmhgtYBx4","QVPvEd4N81Y","FTsaUUU_P3M","3I7S6TjJ7A8","mJ7NWV-6jH8","H6L-jLRKpww","eyILMmMe_7E","eaFIR8BWqeQ","G-hrjJ3Nr8k","GsPRKoos0WM","GsPRKoos0WM","vS0i3JIncaw","7tB3w0-vFzI","2qsQ8edARcU","8M1tc4nAhJg"
+  ],
+  s2: ["xb1","xb2","xb3","xb4","xb5"],
+  s3: ["xa2flcw","xa2fu2s","xa2fu2u","xa2fu2y","xa2fu2w"],
+  s4: ["xc1","xc2","xc3","xc4","xc5"]
+};
+
+const posters = {
+  s1: "https://i.imgur.com/L8otzmh.jpg",
+  s2: "https://i.imgur.com/epo5CCa.jpg",
+  s3: "https://i.imgur.com/Ttv8Bg9.jpg",
+  s4: "https://i.imgur.com/PeMQ2VF.jpg"
+};
+
 let currentSeason = "";
 let currentIndex = 0;
 
-const data = {
-  s1: [ "_JKNDCvPc3A","4jHoj5geuJ8","50jkNwbNYFs","rWOJMX9xDyA","JVw2OrBg0Os","qCJhIAHU7c8","AjNAan3r_EQ","PBoW0shkDIo","xBou90Yk1i4","xBou90Yk1i4","ZWxmhgtYBx4","QVPvEd4N81Y","FTsaUUU_P3M","3I7S6TjJ7A8","mJ7NWV-6jH8","H6L-jLRKpww","eyILMmMe_7E","eaFIR8BWqeQ","G-hrjJ3Nr8k","GsPRKoos0WM","GsPRKoos0WM","vS0i3JIncaw","7tB3w0-vFzI","2qsQ8edARcU","8M1tc4nAhJg" ],
-  s2: [ "xb1","xb2","xb3","xb4","xb5" ],
-  s3: [ "xa2flcw","xa2fu2s","xa2fu2u","xa2fu2y","xa2fu2w" ],
-  s4: [ "xc1","xc2","xc3","xc4","xc5" ]
-};
+function initSliders(){
+  for(const s in data){
+    const slider = document.getElementById(s+"-slider");
+    data[s].forEach((vid,i)=>{
+      const card = document.createElement("div");
+      card.className="card";
+      card.style.backgroundImage=`url(${posters[s]})`;
+      const title = document.createElement("div");
+      title.className="card-title";
+      title.innerText="Bölüm "+(i+1);
+      card.appendChild(title);
+      card.onclick = () => openSeason(s,i);
+      slider.appendChild(card);
+    });
+  }
+}
 
-function openSeason(season){
-  currentSeason = season;
-  currentIndex = 0;
-  document.getElementById("seasons").style.display = "none";
-  document.getElementById("playerPage").style.display = "block";
+function openSeason(season,index){
+  currentSeason=season;
+  currentIndex=index;
+  document.getElementById("main").style.display="none";
+  document.getElementById("playerPage").style.display="block";
   renderEpisodes();
   playVideo(currentIndex);
 }
 
 function renderEpisodes(){
   const container = document.getElementById("episodes");
-  container.innerHTML = "";
+  container.innerHTML="";
   data[currentSeason].forEach((vid,i)=>{
-    const el = document.createElement("div");
-    el.className = "ep";
+    const el=document.createElement("div");
+    el.className="ep";
     if(i===currentIndex) el.classList.add("active");
-    el.innerText = "Bölüm " + (i+1);
-    el.onclick = () => {
-      currentIndex=i;
-      playVideo(i);
-      renderEpisodes();
-      // Bölüm seçince yatay scroll otomatik kaydırma
-      el.scrollIntoView({behavior:"smooth",inline:"center"});
-    };
+    el.innerText="Bölüm "+(i+1);
+    el.onclick=()=>{currentIndex=i;playVideo(i);renderEpisodes(); el.scrollIntoView({behavior:"smooth",inline:"center"});};
     container.appendChild(el);
   });
+  updateNavButtons();
 }
 
 function playVideo(i){
-  const id = data[currentSeason][i];
-  if(currentSeason === "s1"){
-    document.getElementById("videoFrame").src = "https://www.youtube.com/embed/" + id + "?autoplay=1";
-  } else {
-    document.getElementById("videoFrame").src = "https://www.dailymotion.com/embed/video/" + id + "?autoplay=1";
-  }
+  const id=data[currentSeason][i];
+  const iframe=document.getElementById("videoFrame");
+  if(currentSeason==="s1") iframe.src=`https://www.youtube.com/embed/${id}?autoplay=1`;
+  else iframe.src=`https://www.dailymotion.com/embed/video/${id}?autoplay=1`;
+  updateNavButtons();
 }
 
 function goHome(){
-  document.getElementById("playerPage").style.display = "none";
-  document.getElementById("seasons").style.display = "grid";
-  document.getElementById("videoFrame").src = "";
+  document.getElementById("playerPage").style.display="none";
+  document.getElementById("main").style.display="block";
+  document.getElementById("videoFrame").src="";
 }
+
+function prevEpisode(){
+  if(currentIndex>0){currentIndex--;playVideo(currentIndex);renderEpisodes();}
+}
+function nextEpisode(){
+  if(currentIndex<data[currentSeason].length-1){currentIndex++;playVideo(currentIndex);renderEpisodes();}
+}
+
+function updateNavButtons(){
+  document.getElementById("prevBtn").disabled=currentIndex===0;
+  document.getElementById("nextBtn").disabled=currentIndex===data[currentSeason].length-1;
+}
+
+initSliders();
 </script>
 
 </body>
