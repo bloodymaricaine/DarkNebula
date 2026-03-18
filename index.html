@@ -9,10 +9,10 @@ body {margin:0;font-family:Arial;background:#0f172a;color:white;}
 header {text-align:center;padding:15px;background:#020617;font-size:26px;font-weight:bold;cursor:pointer;}
 #seasons {display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;padding:20px;}
 .card {height:160px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:bold;cursor:pointer;background-size:cover;background-position:center;box-shadow:0 5px 20px rgba(0,0,0,0.5);}
-#playerPage {display:none;padding:10px;}
+#playerPage {display:none;padding:10px;position:relative;}
 .video {width:100%;height:60vh;}
-#episodes {display:flex;overflow-x:auto;gap:10px;margin-top:10px;}
-.ep {background:#1e293b;padding:10px;border-radius:10px;cursor:pointer;white-space:nowrap;}
+#episodes {display:flex;overflow-x:auto;gap:10px;margin-top:10px;padding:10px 0;background:#1e293b;border-radius:10px;}
+.ep {padding:10px 15px;background:#0f172a;border-radius:10px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
 .active {border:2px solid red;}
 </style>
 </head>
@@ -38,7 +38,7 @@ let currentIndex = 0;
 
 const data = {
   s1: [ "_JKNDCvPc3A","4jHoj5geuJ8","50jkNwbNYFs","rWOJMX9xDyA","JVw2OrBg0Os","qCJhIAHU7c8","AjNAan3r_EQ","PBoW0shkDIo","xBou90Yk1i4","xBou90Yk1i4","ZWxmhgtYBx4","QVPvEd4N81Y","FTsaUUU_P3M","3I7S6TjJ7A8","mJ7NWV-6jH8","H6L-jLRKpww","eyILMmMe_7E","eaFIR8BWqeQ","G-hrjJ3Nr8k","GsPRKoos0WM","GsPRKoos0WM","vS0i3JIncaw","7tB3w0-vFzI","2qsQ8edARcU","8M1tc4nAhJg" ],
-  s2: [ "xb1","xb2","xb3","xb4","xb5" ], // Örnek Dailymotion video ID’leri, değiştirilebilir
+  s2: [ "xb1","xb2","xb3","xb4","xb5" ],
   s3: [ "xa2flcw","xa2fu2s","xa2fu2u","xa2fu2y","xa2fu2w" ],
   s4: [ "xc1","xc2","xc3","xc4","xc5" ]
 };
@@ -64,6 +64,8 @@ function renderEpisodes(){
       currentIndex=i;
       playVideo(i);
       renderEpisodes();
+      // Bölüm seçince yatay scroll otomatik kaydırma
+      el.scrollIntoView({behavior:"smooth",inline:"center"});
     };
     container.appendChild(el);
   });
@@ -72,10 +74,8 @@ function renderEpisodes(){
 function playVideo(i){
   const id = data[currentSeason][i];
   if(currentSeason === "s1"){
-    // YouTube embed
     document.getElementById("videoFrame").src = "https://www.youtube.com/embed/" + id + "?autoplay=1";
   } else {
-    // Dailymotion embed
     document.getElementById("videoFrame").src = "https://www.dailymotion.com/embed/video/" + id + "?autoplay=1";
   }
 }
