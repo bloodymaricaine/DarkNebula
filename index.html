@@ -10,14 +10,29 @@ header {display:flex; justify-content:space-between; align-items:center; backgro
 header h1 {color:#e94560; font-size:26px; font-weight:bold;}
 .toggle {cursor:pointer; background:#e94560; border:none; padding:8px 14px; border-radius:12px; color:#f5f5f5; font-weight:bold; font-size:14px;}
 #seasons {display:grid; grid-template-columns: repeat(2,1fr); grid-template-rows: repeat(2,1fr); gap:20px; padding:20px; height:calc(100vh - 70px);}
-.season-card {background:#0f0f1a; border-radius:20px; display:flex; justify-content:center; align-items:center; font-size:22px; font-weight:bold; cursor:pointer; text-align:center; color:#f5f5f5; box-shadow:0 4px 15px rgba(233,69,96,0.4); transition: transform 0.3s, box-shadow 0.3s;}
+.season-card {
+    background-size:cover;
+    background-position:center;
+    border-radius:20px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:22px;
+    font-weight:bold;
+    cursor:pointer;
+    text-align:center;
+    color:#f5f5f5;
+    box-shadow:0 4px 15px rgba(233,69,96,0.4);
+    transition: transform 0.3s, box-shadow 0.3s;
+    text-shadow: 2px 2px 6px rgba(0,0,0,0.7);
+}
 .season-card:hover {transform:scale(1.05); box-shadow:0 8px 25px rgba(233,69,96,0.7);}
 #episodes {display:none; padding:20px;}
 .back {margin-bottom:15px; padding:12px 18px; background:#e94560; color:#f5f5f5; border:none; border-radius:12px; cursor:pointer; font-weight:bold; font-size:14px;}
 .container {display:grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap:15px;}
 .card {background:#0f0f1a; border-radius:15px; overflow:hidden; cursor:pointer; transition:transform 0.3s, box-shadow 0.3s; box-shadow:0 4px 15px rgba(233,69,96,0.3);}
 .card:hover {transform:scale(1.05); box-shadow:0 6px 20px rgba(233,69,96,0.6);}
-.card img {width:100%; height:150px; object-fit:cover;}
+.card img {width:100%; height:150px; object-fit:cover; border-radius:10px 10px 0 0;}
 .card h3 {padding:10px; font-size:14px; text-align:center; color:#f5f5f5;}
 .modal {display:none; position:fixed; width:100%; height:100%; background:rgba(0,0,0,0.95); justify-content:center; align-items:center; z-index:999;}
 .modal iframe {width:90%; height:60%; border:none; border-radius:15px;}
@@ -37,10 +52,10 @@ body.light .back {background:#162447; color:#f5f5f5;}
 </header>
 
 <div id="seasons">
-<div class="season-card" onclick="openSeason('s1')">Metal Fusion</div>
-<div class="season-card" onclick="openSeason('s2')">Metal Masters</div>
-<div class="season-card" onclick="openSeason('s3')">Metal Fury</div>
-<div class="season-card" onclick="openSeason('s4')">Shogun Steel</div>
+<div class="season-card" style="background-image:url('https://i.imgur.com/L8otzmh.jpg');" onclick="openSeason('s1')">Metal Fusion</div>
+<div class="season-card" style="background-image:url('https://i.imgur.com/epo5CCa.jpg');" onclick="openSeason('s2')">Metal Masters</div>
+<div class="season-card" style="background-image:url('https://i.imgur.com/Ttv8Bg9.jpg');" onclick="openSeason('s3')">Metal Fury</div>
+<div class="season-card" style="background-image:url('https://i.imgur.com/PeMQ2VF.jpg');" onclick="openSeason('s4')">Shogun Steel</div>
 </div>
 
 <div id="episodes">
@@ -55,23 +70,23 @@ body.light .back {background:#162447; color:#f5f5f5;}
 <script>
 const data = {
 s1:[
-    {title:"Metal Fusion 1. Bölüm", link:"https://www.dailymotion.com/embed/video/VIDEO_ID_1"},
-    {title:"Metal Fusion 2. Bölüm", link:"https://www.dailymotion.com/embed/video/VIDEO_ID_2"}
+    {title:"Metal Fusion 1. Bölüm", link:"https://www.dailymotion.com/embed/video/VIDEO_ID_1", image:"https://i.imgur.com/10.jpg"},
+    {title:"Metal Fusion 2. Bölüm", link:"https://www.dailymotion.com/embed/video/VIDEO_ID_2", image:"https://i.imgur.com/10.jpg"}
 ],
 s2:[
-    {title:"Metal Masters 1. Bölüm", link:"https://www.dailymotion.com/embed/video/VIDEO_ID_3"},
-    {title:"Metal Masters 2. Bölüm", link:"https://www.dailymotion.com/embed/video/VIDEO_ID_4"}
+    {title:"Metal Masters 1. Bölüm", link:"https://www.dailymotion.com/embed/video/VIDEO_ID_3", image:"https://i.imgur.com/10.jpg"},
+    {title:"Metal Masters 2. Bölüm", link:"https://www.dailymotion.com/embed/video/VIDEO_ID_4", image:"https://i.imgur.com/10.jpg"}
 ],
 s3:[
-    {title:"Metal Fury 1. Bölüm", link:"https://www.dailymotion.com/embed/video/xa2flcw"},
-    {title:"Metal Fury 2. Bölüm", link:"https://www.dailymotion.com/embed/video/xa2fu2s"},
-    {title:"Metal Fury 3. Bölüm", link:"https://www.dailymotion.com/embed/video/xa2fu2u"},
-    {title:"Metal Fury 4. Bölüm", link:"https://www.dailymotion.com/embed/video/xa2fu2y"},
-    {title:"Metal Fury 5. Bölüm", link:"https://www.dailymotion.com/embed/video/xa2fu2w"}
+    {title:"Metal Fury 1. Bölüm", link:"https://www.dailymotion.com/embed/video/xa2flcw", image:"https://i.imgur.com/10.jpg"},
+    {title:"Metal Fury 2. Bölüm", link:"https://www.dailymotion.com/embed/video/xa2fu2s", image:"https://i.imgur.com/10.jpg"},
+    {title:"Metal Fury 3. Bölüm", link:"https://www.dailymotion.com/embed/video/xa2fu2u", image:"https://i.imgur.com/10.jpg"},
+    {title:"Metal Fury 4. Bölüm", link:"https://www.dailymotion.com/embed/video/xa2fu2y", image:"https://i.imgur.com/10.jpg"},
+    {title:"Metal Fury 5. Bölüm", link:"https://www.dailymotion.com/embed/video/xa2fu2w", image:"https://i.imgur.com/10.jpg"}
 ],
 s4:[
-    {title:"Shogun Steel 1. Bölüm", link:"https://www.dailymotion.com/embed/video/VIDEO_ID_7"},
-    {title:"Shogun Steel 2. Bölüm", link:"https://www.dailymotion.com/embed/video/VIDEO_ID_8"}
+    {title:"Shogun Steel 1. Bölüm", link:"https://www.dailymotion.com/embed/video/VIDEO_ID_7", image:"https://i.imgur.com/10.jpg"},
+    {title:"Shogun Steel 2. Bölüm", link:"https://www.dailymotion.com/embed/video/VIDEO_ID_8", image:"https://i.imgur.com/10.jpg"}
 ]
 };
 
@@ -81,7 +96,10 @@ function openSeason(season){
     let list=document.getElementById("episodeList");
     list.innerHTML="";
     data[season].forEach(ep=>{
-        list.innerHTML+=`<div class="card" onclick="openVideo('${ep.link}')"><img src="https://i.imgur.com/10.jpg"><h3>${ep.title}</h3></div>`;
+        list.innerHTML+=`<div class="card" onclick="openVideo('${ep.link}')">
+            <img src="${ep.image}">
+            <h3>${ep.title}</h3>
+        </div>`;
     });
 }
 function goBack(){document.getElementById("episodes").style.display="none";document.getElementById("seasons").style.display="grid";}
