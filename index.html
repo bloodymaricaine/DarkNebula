@@ -26,9 +26,6 @@ header{position:fixed;width:100%;top:0;text-align:center;padding:15px;font-size:
 .overlay:hover{background:rgba(50,61,79,0.9);}
 #skip{left:20px;top:50%;transform:translateY(-50%);display:none;}
 #next{right:50%;top:50%;transform:translate(50%, -50%);display:none;}
-#resumePopup{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#020617;padding:15px;border-radius:10px;z-index:9999;box-shadow:0 4px 15px rgba(0,0,0,0.5);}
-#resumePopup button{margin:5px;padding:5px 10px;background:#334155;color:#fff;border:none;border-radius:5px;cursor:pointer;}
-#resumePopup button:hover{background:#556677;}
 @media(max-width:768px){.videoContainer{min-width:100%;}}
 </style>
 </head>
@@ -121,7 +118,6 @@ function startTimer(){
   timer=setInterval(()=>{
     if(player && player.getCurrentTime){currentTime=Math.floor(player.getCurrentTime());}
     else{currentTime+=1;}
-    saveProgress();
     if(currentTime>1 && !started){started=true; document.getElementById("skip").style.display="block";}
     if(currentTime>=44){document.getElementById("skip").style.display="none";}
     if(currentTime>=1230){document.getElementById("next").style.display="block";}
@@ -148,28 +144,7 @@ function goHome(){
   clearInterval(timer);
 }
 
-/* Kayıt */
-function saveProgress(){localStorage.setItem("melflix_progress",JSON.stringify({season:currentSeason,episode:currentEpisode,time:currentTime}));}
-
-/* Popup */
-function checkProgress(){
-  const d=JSON.parse(localStorage.getItem("melflix_progress")); if(!d) return;
-  const popup=document.createElement("div"); popup.id="resumePopup";
-  popup.innerHTML=`Kaldığın yer: ${titles[d.season]} Bölüm ${d.episode+1} (${formatTime(d.time)})<br>
-  <button onclick="resume()">Devam Et</button>
-  <button onclick="closePopup()">Kapat</button>`;
-  document.body.appendChild(popup); window.resumeData=d;
-}
-function closePopup(){document.getElementById("resumePopup").remove();}
-function resume(){
-  const d=window.resumeData; currentSeason=d.season; currentEpisode=d.episode; currentTime=d.time; started=false;
-  document.getElementById("main").style.display="none";
-  document.getElementById("playerPage").style.display="flex";
-  loadEpisodes(); loadVideo(); closePopup();
-}
-function formatTime(sec){let m=Math.floor(sec/60), s=sec%60; return `${m}:${s<10?"0"+s:s}`;}
-
-loadHome(); checkProgress();
+loadHome();
 </script>
 </body>
 </html>
