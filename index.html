@@ -16,7 +16,13 @@ header{position:fixed;width:100%;top:0;text-align:center;padding:15px;font-size:
 .videoContainer{flex:1;position:relative;}
 .video{width:100%;height:75vh;border:none;}
 /* BÖLÜMLER */
-.episodes{width:260px;height:calc(100vh - 80px);overflow-y:auto;background:#020617;padding:10px;}
+.episodes{
+width:260px;height:calc(100vh - 80px);overflow-y:auto;background:#020617;padding:10px;
+scrollbar-width:thin; scrollbar-color:#334155 #020617;
+}
+.episodes::-webkit-scrollbar{width:8px;}
+.episodes::-webkit-scrollbar-track{background:#020617;border-radius:6px;}
+.episodes::-webkit-scrollbar-thumb{background:#334155;border-radius:6px;}
 .ep{padding:10px;border-radius:6px;cursor:pointer;margin-bottom:5px;}
 .ep.active{background:#334155;}
 /* BUTONLAR */
@@ -30,24 +36,23 @@ header{position:fixed;width:100%;top:0;text-align:center;padding:15px;font-size:
 <div id="main" class="container"></div>
 <div id="playerPage">
   <div class="videoContainer">
-    <iframe id="video" class="video" allow="autoplay" allowfullscreen></iframe>
+    <div id="player"></div>
     <div id="skip" class="overlay" onclick="skipIntro()">Intro Atla</div>
     <div id="next" class="overlay" onclick="nextEpisode()">Sonraki ▶</div>
   </div>
   <div id="episodes" class="episodes"></div>
 </div>
 
+<script src="https://www.youtube.com/iframe_api"></script>
 <script>
 const data={
 s1:["_JKNDCvPc3A","4jHoj5geuJ8","50jkNwbNYFs","rWOJMX9xDyA","JVw2OrBg0Os","qCJhIAHU7c8","AjNAan3r_EQ","PBoW0shkDIo","xBou90Yk1i4","ZWxmhgtYBx4","QVPvEd4N81Y","FTsaUUU_P3M","3I7S6TjJ7A8","mJ7NWV-6jH8","H6L-jLRKpww","eyILMmMe_7E","eaFIR8BWqeQ","G-hrjJ3Nr8k","GsPRKoos0WM","vS0i3JIncaw","7tB3w0-vFzI","2qsQ8edARcU","8M1tc4nAhJg"],
-s2:[],
-s3:["xa2flcw","xa2fu2s","xa2fu2u","xa2fu2y","xa2fu2w"],
-s4:[]
+s2:[], s3:["xa2flcw","xa2fu2s","xa2fu2u","xa2fu2y","xa2fu2w"], s4:[]
 };
 const titles={s1:"Metal Fusion",s2:"Metal Masters",s3:"Metal Fury",s4:"Shogun Steel"};
 const images={s1:"https://i.imgur.com/L8otzmh.jpg",s2:"https://i.imgur.com/epo5CCa.jpg",s3:"https://i.imgur.com/Ttv8Bg9.jpg",s4:"https://i.imgur.com/PeMQ2VF.jpg"};
 
-let currentSeason=null,currentEpisode=0,timer,currentTime=0,started=false;
+let currentSeason=null, currentEpisode=0, currentTime=0, timer, started=false, player;
 
 /* ANA SAYFA */
 function loadHome(){
@@ -63,10 +68,10 @@ function loadHome(){
 
 /* SEZON AÇ */
 function openSeason(s){
-  currentSeason=s; currentEpisode=0;
+  currentSeason=s; currentEpisode=0; currentTime=0;
   document.getElementById("main").style.display="none";
   document.getElementById("playerPage").style.display="flex";
-  loadEpisodes(); play();
+  loadEpisodes(); loadPlayer();
 }
 
 /* BÖLÜMLER */
@@ -76,57 +81,60 @@ function loadEpisodes(){
     const d=document.createElement("div");
     d.className="ep"+(i===currentEpisode?" active":"");
     d.innerText="Bölüm "+(i+1);
-    d.onclick=()=>{currentEpisode=i; play();}
+    d.onclick=()=>{currentEpisode=i; currentTime=0; loadPlayer();}
     ep.appendChild(d);
   });
 }
 
-/* VIDEO */
-function play(startTime=0){
-  clearInterval(timer); currentTime=startTime; started=false;
-  const v=data[currentSeason][currentEpisode];
-
-  let src="";
-  if(currentSeason==="s1"||currentSeason==="s2"){
-    src=`https://www.youtube.com/embed/${v}?autoplay=1&start=${startTime}&enablejsapi=1`;
-  } else if(currentSeason==="s3"||currentSeason==="s4"){
-    src=`https://www.dailymotion.com/embed/video/${v}?autoplay=1&start=${startTime}`;
-  }
-
-  document.getElementById("video").src=src;
+/* YouTube API */
+function loadPlayer(){
+  const videoId=data[currentSeason][currentEpisode];
+  if(player) player.destroy();
+  player=new YT.Player('player',{
+    height:'75vh', width:'100%',
+    videoId:videoId,
+    playerVars:{autoplay:1, start:currentTime, rel:0, modestbranding:1},
+    events:{
+      'onReady': onPlayerReady
+    }
+  });
   document.getElementById("skip").style.display="none";
   document.getElementById("next").style.display="none";
-  loadEpisodes();
+  startTimer();
+}
 
+function onPlayerReady(event){event.target.playVideo();}
+
+function startTimer(){
+  clearInterval(timer); started=false;
   timer=setInterval(()=>{
-    currentTime++; saveProgress();
-    if(currentTime>1 && !started){started=true; document.getElementById("skip").style.display="block";}
-    if(currentTime>=44){document.getElementById("skip").style.display="none";}
-    if(currentTime>=1230){document.getElementById("next").style.display="block";}
-    if(currentTime>=1320){nextEpisode();}
+    if(player && player.getCurrentTime){
+      currentTime=Math.floor(player.getCurrentTime());
+      if(currentTime>1 && !started){started=true; document.getElementById("skip").style.display="block";}
+      if(currentTime>=44){document.getElementById("skip").style.display="none";}
+      if(currentTime>=1230){document.getElementById("next").style.display="block";}
+      if(currentTime>=1320){nextEpisode();}
+    }
   },1000);
 }
 
 /* INTRO */
 function skipIntro(){
-  const v=data[currentSeason][currentEpisode];
-  // intro atlandığında video aynı yerde devam edecek
-  if(currentSeason==="s1"||currentSeason==="s2"){
-    document.getElementById("video").src=`https://www.youtube.com/embed/${v}?autoplay=1&start=44&enablejsapi=1`;
-  } else {
-    document.getElementById("video").src=`https://www.dailymotion.com/embed/video/${v}?autoplay=1&start=44`;
-  }
+  if(player) player.seekTo(44, true);
   document.getElementById("skip").style.display="none";
 }
 
 /* NEXT */
-function nextEpisode(){if(currentEpisode<data[currentSeason].length-1){currentEpisode++; play();}}
+function nextEpisode(){
+  if(currentEpisode<data[currentSeason].length-1){currentEpisode++; currentTime=0; loadPlayer();}
+}
 
 /* ANA SAYFA */
 function goHome(){
   document.getElementById("main").style.display="block";
   document.getElementById("playerPage").style.display="none";
-  document.getElementById("video").src=""; clearInterval(timer);
+  if(player) player.destroy();
+  clearInterval(timer);
 }
 
 /* KAYIT */
@@ -145,9 +153,9 @@ function checkProgress(){
 }
 function closePopup(){document.getElementById("resumePopup").remove();}
 function resume(){
-  const d=window.resumeData; currentSeason=d.season; currentEpisode=d.episode;
+  const d=window.resumeData; currentSeason=d.season; currentEpisode=d.episode; currentTime=d.time;
   document.getElementById("main").style.display="none"; document.getElementById("playerPage").style.display="flex";
-  loadEpisodes(); play(d.time); closePopup();
+  loadEpisodes(); loadPlayer(); closePopup();
 }
 
 loadHome(); checkProgress();
