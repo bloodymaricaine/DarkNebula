@@ -1,26 +1,9 @@
-<script>
-
-let currentSeason=null;
-let currentEpisode=0;
-let timer;
-let currentTime=0;
-let started=false;
-
-/* KAYIT */
-function saveProgress(){
-localStorage.setItem("melflix_progress", JSON.stringify({
-season: currentSeason,
-episode: currentEpisode,
-time: currentTime
-}));
-}
-
-/* YÜKLE */
 function checkProgress(){
 const data = JSON.parse(localStorage.getItem("melflix_progress"));
 if(!data) return;
 
 const popup = document.createElement("div");
+popup.id = "resumePopup"; // ⭐ EKLENDİ
 popup.style.position="fixed";
 popup.style.bottom="20px";
 popup.style.left="50%";
@@ -34,12 +17,16 @@ popup.innerHTML=`
 Kaldığın yer: ${titles[data.season]} Bölüm ${data.episode+1}
 <br><br>
 <button onclick="resume()">Devam Et</button>
-<button onclick="this.parentElement.remove()">Kapat</button>
+<button onclick="closePopup()">Kapat</button>
 `;
 
 document.body.appendChild(popup);
 
 window.resumeData=data;
+}
+
+function closePopup(){
+document.getElementById("resumePopup").remove();
 }
 
 function resume(){
@@ -53,84 +40,5 @@ document.getElementById("playerPage").style.display="flex";
 loadEpisodes();
 play(d.time);
 
-document.querySelector("div[style]").remove();
+closePopup(); // ⭐ BURASI DA GÜNCEL
 }
-
-/* VIDEO */
-function play(startTime=0){
-clearInterval(timer);
-currentTime=startTime;
-started=false;
-
-const v=data[currentSeason][currentEpisode];
-
-let src = currentSeason==="s1"
-? `https://www.youtube.com/embed/${v}?autoplay=1&start=${startTime}`
-: `https://www.dailymotion.com/embed/video/${v}?autoplay=1&start=${startTime}`;
-
-document.getElementById("video").src=src;
-
-document.getElementById("skip").style.display="none";
-document.getElementById("next").style.display="none";
-
-loadEpisodes();
-
-/* ZAMAN */
-timer=setInterval(()=>{
-currentTime++;
-saveProgress();
-
-/* video başladıktan sonra intro butonu */
-if(currentTime > 1 && !started){
-started=true;
-document.getElementById("skip").style.display="block";
-}
-
-/* 44 sn sonra intro kaybolur */
-if(currentTime>=44){
-document.getElementById("skip").style.display="none";
-}
-
-/* 20:40 sonrası NEXT */
-if(currentTime>=1240){
-document.getElementById("next").style.display="block";
-}
-
-/* AUTO NEXT */
-if(currentTime>=1320){
-nextEpisode();
-}
-
-},1000);
-}
-
-/* INTRO */
-function skipIntro(){
-const v=data[currentSeason][currentEpisode];
-
-document.getElementById("video").src=
-`https://www.youtube.com/embed/${v}?autoplay=1&start=44`;
-
-document.getElementById("skip").style.display="none";
-}
-
-/* NEXT */
-function nextEpisode(){
-if(currentEpisode < data[currentSeason].length-1){
-currentEpisode++;
-play();
-}
-}
-
-/* ANA SAYFA */
-function goHome(){
-document.getElementById("main").style.display="block";
-document.getElementById("playerPage").style.display="none";
-document.getElementById("video").src="";
-clearInterval(timer);
-}
-
-loadHome();
-checkProgress();
-
-</script>
