@@ -5,30 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Melflix</title>
 <style>
-body{margin:0;background:#0b0f1a;color:#fff;font-family:sans-serif}
-header{position:fixed;width:100%;top:0;text-align:center;padding:15px;font-size:26px;background:#020617;cursor:pointer;z-index:10}
+body{margin:0;background:#0b0f1a;color:#fff;font-family:sans-serif;overflow-x:hidden;}
+header{position:fixed;width:100%;top:0;text-align:center;padding:15px;font-size:26px;background:#020617;cursor:pointer;z-index:10;box-shadow:0 2px 6px rgba(0,0,0,0.5);}
 .container{padding-top:80px}
 /* ANA SAYFA */
 .row{margin:20px}
-.card{width:260px;height:340px;border-radius:12px;background-size:cover;cursor:pointer;}
+.card{width:260px;height:340px;border-radius:12px;background-size:cover;background-position:center;cursor:pointer;transition:0.3s;box-shadow:0 4px 15px rgba(0,0,0,0.4);}
+.card:hover{transform:scale(1.05);}
+.row h2{margin:0 0 10px 0;font-size:20px;}
 /* PLAYER */
-#playerPage{display:none;padding-top:80px;display:flex;}
-.videoContainer{flex:1;position:relative;}
-.video{width:100%;height:75vh;border:none;}
+#playerPage{display:none;padding-top:80px;display:flex;flex-wrap:wrap;}
+.videoContainer{flex:1;position:relative;min-width:600px;}
+.video{width:100%;height:75vh;border:none;border-radius:12px;}
 /* BÖLÜMLER */
-.episodes{
-width:260px;height:calc(100vh - 80px);overflow-y:auto;background:#020617;padding:10px;
-scrollbar-width:thin; scrollbar-color:#334155 #020617;
-}
+.episodes{width:260px;height:calc(100vh - 80px);overflow-y:auto;background:#020617;padding:10px;scrollbar-width:thin;scrollbar-color:#334155 #020617;}
 .episodes::-webkit-scrollbar{width:8px;}
 .episodes::-webkit-scrollbar-track{background:#020617;border-radius:6px;}
 .episodes::-webkit-scrollbar-thumb{background:#334155;border-radius:6px;}
-.ep{padding:10px;border-radius:6px;cursor:pointer;margin-bottom:5px;}
-.ep.active{background:#334155;}
+.ep{padding:10px;border-radius:6px;cursor:pointer;margin-bottom:5px;transition:0.2s;}
+.ep:hover{background:#44556b;}
+.ep.active{background:#334155;color:#fff;font-weight:bold;}
 /* BUTONLAR */
-.overlay{position:absolute;padding:10px 16px;background:rgba(30,41,59,0.7);border-radius:10px;cursor:pointer;backdrop-filter:blur(5px);font-size:14px;z-index:9999;}
+.overlay{position:absolute;padding:10px 16px;background:rgba(30,41,59,0.8);border-radius:10px;cursor:pointer;backdrop-filter:blur(5px);font-size:14px;z-index:9999;transition:0.2s;}
+.overlay:hover{background:rgba(50,61,79,0.9);}
 #skip{left:20px;top:50%;transform:translateY(-50%);display:none;}
 #next{right:50%;top:50%;transform:translate(50%, -50%);display:none;}
+/* POPUP */
+#resumePopup{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#020617;padding:15px;border-radius:10px;z-index:9999;box-shadow:0 4px 15px rgba(0,0,0,0.5);}
+#resumePopup button{margin:5px;padding:5px 10px;background:#334155;color:#fff;border:none;border-radius:5px;cursor:pointer;}
+#resumePopup button:hover{background:#556677;}
 </style>
 </head>
 <body>
@@ -36,14 +41,13 @@ scrollbar-width:thin; scrollbar-color:#334155 #020617;
 <div id="main" class="container"></div>
 <div id="playerPage">
   <div class="videoContainer">
-    <div id="player"></div>
+    <iframe id="video" class="video" allow="autoplay" allowfullscreen></iframe>
     <div id="skip" class="overlay" onclick="skipIntro()">Intro Atla</div>
     <div id="next" class="overlay" onclick="nextEpisode()">Sonraki ▶</div>
   </div>
   <div id="episodes" class="episodes"></div>
 </div>
 
-<script src="https://www.youtube.com/iframe_api"></script>
 <script>
 const data={
 s1:["_JKNDCvPc3A","4jHoj5geuJ8","50jkNwbNYFs","rWOJMX9xDyA","JVw2OrBg0Os","qCJhIAHU7c8","AjNAan3r_EQ","PBoW0shkDIo","xBou90Yk1i4","ZWxmhgtYBx4","QVPvEd4N81Y","FTsaUUU_P3M","3I7S6TjJ7A8","mJ7NWV-6jH8","H6L-jLRKpww","eyILMmMe_7E","eaFIR8BWqeQ","G-hrjJ3Nr8k","GsPRKoos0WM","vS0i3JIncaw","7tB3w0-vFzI","2qsQ8edARcU","8M1tc4nAhJg"],
@@ -52,7 +56,7 @@ s2:[], s3:["xa2flcw","xa2fu2s","xa2fu2u","xa2fu2y","xa2fu2w"], s4:[]
 const titles={s1:"Metal Fusion",s2:"Metal Masters",s3:"Metal Fury",s4:"Shogun Steel"};
 const images={s1:"https://i.imgur.com/L8otzmh.jpg",s2:"https://i.imgur.com/epo5CCa.jpg",s3:"https://i.imgur.com/Ttv8Bg9.jpg",s4:"https://i.imgur.com/PeMQ2VF.jpg"};
 
-let currentSeason=null, currentEpisode=0, currentTime=0, timer, started=false, player;
+let currentSeason=null, currentEpisode=0, currentTime=0, timer, started=false;
 
 /* ANA SAYFA */
 function loadHome(){
@@ -71,7 +75,7 @@ function openSeason(s){
   currentSeason=s; currentEpisode=0; currentTime=0;
   document.getElementById("main").style.display="none";
   document.getElementById("playerPage").style.display="flex";
-  loadEpisodes(); loadPlayer();
+  loadEpisodes(); play();
 }
 
 /* BÖLÜMLER */
@@ -81,59 +85,52 @@ function loadEpisodes(){
     const d=document.createElement("div");
     d.className="ep"+(i===currentEpisode?" active":"");
     d.innerText="Bölüm "+(i+1);
-    d.onclick=()=>{currentEpisode=i; currentTime=0; loadPlayer();}
+    d.onclick=()=>{currentEpisode=i; currentTime=0; play();}
     ep.appendChild(d);
   });
 }
 
-/* YouTube API */
-function loadPlayer(){
-  const videoId=data[currentSeason][currentEpisode];
-  if(player) player.destroy();
-  player=new YT.Player('player',{
-    height:'75vh', width:'100%',
-    videoId:videoId,
-    playerVars:{autoplay:1, start:currentTime, rel:0, modestbranding:1},
-    events:{
-      'onReady': onPlayerReady
-    }
-  });
+/* VIDEO */
+function play(start=0){
+  clearInterval(timer);
+  currentTime=start; started=false;
+  let v=data[currentSeason][currentEpisode];
+  let src="";
+  if(currentSeason==="s1"||currentSeason==="s2"){
+    src=`https://www.youtube.com/embed/${v}?autoplay=1&start=${start}`;
+  } else {
+    src=`https://www.dailymotion.com/embed/video/${v}?autoplay=1&start=${start}`;
+  }
+  document.getElementById("video").src=src;
   document.getElementById("skip").style.display="none";
   document.getElementById("next").style.display="none";
-  startTimer();
-}
+  loadEpisodes();
 
-function onPlayerReady(event){event.target.playVideo();}
-
-function startTimer(){
-  clearInterval(timer); started=false;
   timer=setInterval(()=>{
-    if(player && player.getCurrentTime){
-      currentTime=Math.floor(player.getCurrentTime());
-      if(currentTime>1 && !started){started=true; document.getElementById("skip").style.display="block";}
-      if(currentTime>=44){document.getElementById("skip").style.display="none";}
-      if(currentTime>=1230){document.getElementById("next").style.display="block";}
-      if(currentTime>=1320){nextEpisode();}
-    }
+    currentTime++;
+    saveProgress();
+    if(currentTime>1 && !started){started=true; document.getElementById("skip").style.display="block";}
+    if(currentTime>=44){document.getElementById("skip").style.display="none";}
+    if(currentTime>=1230){document.getElementById("next").style.display="block";}
+    if(currentTime>=1320){nextEpisode();}
   },1000);
 }
 
 /* INTRO */
 function skipIntro(){
-  if(player) player.seekTo(44, true);
+  currentTime=44;
+  play(currentTime);
   document.getElementById("skip").style.display="none";
 }
 
 /* NEXT */
-function nextEpisode(){
-  if(currentEpisode<data[currentSeason].length-1){currentEpisode++; currentTime=0; loadPlayer();}
-}
+function nextEpisode(){if(currentEpisode<data[currentSeason].length-1){currentEpisode++; currentTime=0; play();}}
 
 /* ANA SAYFA */
 function goHome(){
   document.getElementById("main").style.display="block";
   document.getElementById("playerPage").style.display="none";
-  if(player) player.destroy();
+  document.getElementById("video").src="";
   clearInterval(timer);
 }
 
@@ -144,9 +141,7 @@ function saveProgress(){localStorage.setItem("melflix_progress", JSON.stringify(
 function checkProgress(){
   const data=JSON.parse(localStorage.getItem("melflix_progress")); if(!data) return;
   const popup=document.createElement("div"); popup.id="resumePopup";
-  popup.style.position="fixed"; popup.style.bottom="20px"; popup.style.left="50%"; popup.style.transform="translateX(-50%)";
-  popup.style.background="#020617"; popup.style.padding="15px"; popup.style.borderRadius="10px"; popup.style.zIndex="9999";
-  popup.innerHTML=`Kaldığın yer: ${titles[data.season]} Bölüm ${data.episode+1}<br><br>
+  popup.innerHTML=`Kaldığın yer: ${titles[data.season]} Bölüm ${data.episode+1} (${formatTime(data.time)})<br>
   <button onclick="resume()">Devam Et</button>
   <button onclick="closePopup()">Kapat</button>`;
   document.body.appendChild(popup); window.resumeData=data;
@@ -155,7 +150,12 @@ function closePopup(){document.getElementById("resumePopup").remove();}
 function resume(){
   const d=window.resumeData; currentSeason=d.season; currentEpisode=d.episode; currentTime=d.time;
   document.getElementById("main").style.display="none"; document.getElementById("playerPage").style.display="flex";
-  loadEpisodes(); loadPlayer(); closePopup();
+  loadEpisodes(); play(currentTime); closePopup();
+}
+
+function formatTime(sec){
+  let m=Math.floor(sec/60), s=sec%60;
+  return `${m}:${s<10?"0"+s:s}`;
 }
 
 loadHome(); checkProgress();
