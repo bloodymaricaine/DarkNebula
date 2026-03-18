@@ -22,7 +22,9 @@ header {text-align:center;padding:15px;background:#020617;font-size:26px;font-we
 
 <div id="seasons">
   <div class="card" onclick="openSeason('s1')" style="background-image:url('https://i.imgur.com/L8otzmh.jpg')">Metal Fusion</div>
-  <!-- Diğer sezonlar buraya eklenecek -->
+  <div class="card" onclick="openSeason('s2')" style="background-image:url('https://i.imgur.com/epo5CCa.jpg')">Metal Masters</div>
+  <div class="card" onclick="openSeason('s3')" style="background-image:url('https://i.imgur.com/Ttv8Bg9.jpg')">Metal Fury</div>
+  <div class="card" onclick="openSeason('s4')" style="background-image:url('https://i.imgur.com/PeMQ2VF.jpg')">Shogun Steel</div>
 </div>
 
 <div id="playerPage">
@@ -35,33 +37,10 @@ let currentSeason = "";
 let currentIndex = 0;
 
 const data = {
-  s1: [
-    "_JKNDCvPc3A",
-    "4jHoj5geuJ8",
-    "50jkNwbNYFs",
-    "rWOJMX9xDyA",
-    "JVw2OrBg0Os",
-    "qCJhIAHU7c8",
-    "AjNAan3r_EQ",
-    "PBoW0shkDIo",
-    "xBou90Yk1i4",
-    "xBou90Yk1i4",
-    "ZWxmhgtYBx4",
-    "QVPvEd4N81Y",
-    "FTsaUUU_P3M",
-    "3I7S6TjJ7A8",
-    "mJ7NWV-6jH8",
-    "H6L-jLRKpww",
-    "eyILMmMe_7E",
-    "eaFIR8BWqeQ",
-    "G-hrjJ3Nr8k",
-    "GsPRKoos0WM",
-    "GsPRKoos0WM",
-    "vS0i3JIncaw",
-    "7tB3w0-vFzI",
-    "2qsQ8edARcU",
-    "8M1tc4nAhJg"
-  ]
+  s1: [ "_JKNDCvPc3A","4jHoj5geuJ8","50jkNwbNYFs","rWOJMX9xDyA","JVw2OrBg0Os","qCJhIAHU7c8","AjNAan3r_EQ","PBoW0shkDIo","xBou90Yk1i4","xBou90Yk1i4","ZWxmhgtYBx4","QVPvEd4N81Y","FTsaUUU_P3M","3I7S6TjJ7A8","mJ7NWV-6jH8","H6L-jLRKpww","eyILMmMe_7E","eaFIR8BWqeQ","G-hrjJ3Nr8k","GsPRKoos0WM","GsPRKoos0WM","vS0i3JIncaw","7tB3w0-vFzI","2qsQ8edARcU","8M1tc4nAhJg" ],
+  s2: [ "xb1","xb2","xb3","xb4","xb5" ], // Örnek Dailymotion video ID’leri, değiştirilebilir
+  s3: [ "xa2flcw","xa2fu2s","xa2fu2u","xa2fu2y","xa2fu2w" ],
+  s4: [ "xc1","xc2","xc3","xc4","xc5" ]
 };
 
 function openSeason(season){
@@ -92,7 +71,13 @@ function renderEpisodes(){
 
 function playVideo(i){
   const id = data[currentSeason][i];
-  document.getElementById("videoFrame").src = "https://www.youtube.com/embed/" + id + "?autoplay=1";
+  if(currentSeason === "s1"){
+    // YouTube embed
+    document.getElementById("videoFrame").src = "https://www.youtube.com/embed/" + id + "?autoplay=1";
+  } else {
+    // Dailymotion embed
+    document.getElementById("videoFrame").src = "https://www.dailymotion.com/embed/video/" + id + "?autoplay=1";
+  }
 }
 
 function goHome(){
