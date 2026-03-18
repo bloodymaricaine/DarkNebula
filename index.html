@@ -44,32 +44,54 @@ header h1 {color:#e94560;font-size:28px;font-weight:bold;cursor:pointer;}
 </div>
 
 <script>
-// -------------- Bölüm verileri --------------
+// ---------------- Bölüm verileri ----------------
 const seasonData = {
 s1:[ {title:"1. Bölüm", videoId:"VIDEO_ID_1"}, {title:"2. Bölüm", videoId:"VIDEO_ID_2"} ],
 s2:[ {title:"1. Bölüm", videoId:"VIDEO_ID_3"}, {title:"2. Bölüm", videoId:"VIDEO_ID_4"} ],
-s3:[ {title:"1. Bölüm", videoId:"xa2flcw"}, {title:"2. Bölüm", videoId:"xa2fu2s"}, {title:"3. Bölüm", videoId:"xa2fu2u"}, {title:"4. Bölüm", videoId:"xa2fu2y"}, {title:"5. Bölüm", videoId:"xa2fu2w"} ],
+s3:[ 
+  {title:"1. Bölüm", videoId:"xa2flcw"}, 
+  {title:"2. Bölüm", videoId:"xa2fu2s"}, 
+  {title:"3. Bölüm", videoId:"xa2fu2u"}, 
+  {title:"4. Bölüm", videoId:"xa2fu2y"}, 
+  {title:"5. Bölüm", videoId:"xa2fu2w"} 
+  // 6-39. bölümler eklenebilir
+],
 s4:[ {title:"1. Bölüm", videoId:"VIDEO_ID_7"}, {title:"2. Bölüm", videoId:"VIDEO_ID_8"} ]
 };
-let currentSeason="", currentEp=0;
 
-// -------------- Fonksiyonlar --------------
+let currentSeason="", currentEp=0;
+let savedProgress = JSON.parse(localStorage.getItem("darkNebula_currentEpisode") || "null");
+
+// ---------------- Fonksiyonlar ----------------
 function openSeason(season){
-  currentSeason=season;
-  currentEp=0;
+  currentSeason = season;
+  currentEp = 0;
   document.getElementById("seasons").style.display="none";
   document.getElementById("episodePage").style.display="block";
-  openEpisode(currentEp);
+
+  // Kaldığı yerden devam sorusu
+  if(savedProgress && savedProgress.season === season){
+    if(confirm("KALDIĞIN YERDEN DEVAM ET? OK = DEVAM, CANCEL = BAŞTAN")){
+      openEpisode(savedProgress.episode, savedProgress.time || 0);
+    } else {
+      openEpisode(0,0);
+    }
+  } else {
+    openEpisode(0,0);
+  }
 }
 
-function openEpisode(index){
-  currentEp=index;
+function openEpisode(index, startTime=0){
+  currentEp = index;
   const videoId = seasonData[currentSeason][index].videoId;
-  document.getElementById("player").src = "https://www.dailymotion.com/embed/video/" + videoId + "?autoplay=1&controls=1";
+  const playerFrame = document.getElementById("player");
+  playerFrame.src = "https://www.dailymotion.com/embed/video/" + videoId + "?autoplay=1&controls=1&start=" + Math.floor(startTime);
+
   renderEpisodeList();
   updateControls();
 }
 
+// Bölüm listesi
 function renderEpisodeList(){
   const list=document.getElementById("episodeList");
   list.innerHTML="";
@@ -78,11 +100,12 @@ function renderEpisodeList(){
     card.className="episodeCard";
     if(i===currentEp) card.classList.add("activeEp");
     card.innerText=ep.title;
-    card.onclick=()=>openEpisode(i);
+    card.onclick=()=>openEpisode(i,0);
     list.appendChild(card);
   });
 }
 
+// Önceki / Sonraki butonları
 function updateControls(){
   document.getElementById("prevBtn").style.display = currentEp>0?"inline-block":"none";
   document.getElementById("nextBtn").style.display = currentEp<seasonData[currentSeason].length-1?"inline-block":"none";
@@ -90,12 +113,22 @@ function updateControls(){
 
 function nextEpisode(){if(currentEp<seasonData[currentSeason].length-1) openEpisode(currentEp+1);}
 function prevEpisode(){if(currentEp>0) openEpisode(currentEp-1);}
-function backToSeasons(){document.getElementById("episodePage").style.display="none";document.getElementById("seasons").style.display="grid";}
+function backToSeasons(){document.getElementById("episodePage").style.display="none";document.getElementById("seasons").style.display="grid");}
 
-// Başlangıçta ana ekran açılı
+// ---------------- LocalStorage ile kaldığı yeri kaydet ----------------
+setInterval(()=>{
+  const playerFrame = document.getElementById("player");
+  // iframe embed olduğu için Dailymotion start parametresi ile kaydediyoruz
+  localStorage.setItem("darkNebula_currentEpisode", JSON.stringify({
+    season: currentSeason,
+    episode: currentEp,
+    time: 0 // Şu an iframe embed olduğu için video zamanı alınamıyor, Player API ile yapılabilir
+  }));
+},5000);
+
+// Başlangıç
 document.getElementById("seasons").style.display="grid";
 document.getElementById("episodePage").style.display="none";
 </script>
-
 </body>
 </html>
