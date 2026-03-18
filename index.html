@@ -6,55 +6,80 @@
 <title>Melflix</title>
 
 <style>
-    body{margin:0;background:#0b0f1a;color:#fff;font-family:sans-serif; overflow-x: hidden;}
-    header{position:fixed;width:100%;top:0;text-align:center;padding:15px;font-size:26px;background:#020617;cursor:pointer;z-index:100;}
-    .container{padding-top:80px; display: flex; flex-wrap: wrap; justify-content: center;}
-    .row{margin:20px; text-align: center;}
-    .card{width:260px;height:340px;border-radius:12px;background-size:cover;background-position:center;cursor:pointer; transition: transform 0.3s;}
-    .card:hover{transform: scale(1.05);}
-    
-    #playerPage{display:none;padding-top:80px;}
-    .videoContainer{
-        width:100%;
-        max-width: 1000px;
-        margin: 0 auto;
-        position:relative;
-        aspect-ratio:16/9;
-        background:black;
-    }
-    .videoContainer iframe{
-        width:100%;
-        height:100%;
-        border: none;
-    }
-    .episodes{
-        display:flex;
-        overflow-x:auto;
-        gap:10px;
-        padding:20px;
-        justify-content: center;
-    }
-    .ep{
-        background:#1e293b;
-        padding:10px 20px;
-        border-radius:8px;
-        cursor:pointer;
-        white-space:nowrap;
-    }
-    .ep:hover{background: #334155;}
-    
-    .overlay{
-        position:absolute;
-        padding:12px 20px;
-        background:rgba(0,0,0,0.8);
-        border: 1px solid #fff;
-        cursor:pointer;
-        z-index: 20;
-        display: none; /* Başlangıçta gizli */
-        border-radius: 4px;
-    }
-    #skip{left:20px; bottom:60px;} /* Konum iyileştirildi */
-    #next{right:20px; bottom:60px;}
+body{margin:0;background:#0b0f1a;color:#fff;font-family:sans-serif;}
+header{position:fixed;width:100%;top:0;text-align:center;padding:15px;font-size:26px;background:#020617;cursor:pointer;z-index:10;}
+
+.container{padding-top:80px}
+
+/* HOME */
+.row{margin:20px}
+.card{
+width:260px;height:340px;
+border-radius:12px;
+background-size:cover;
+cursor:pointer;
+}
+
+/* PLAYER */
+#playerPage{
+display:none;
+padding-top:80px;
+display:flex;
+}
+
+/* VIDEO */
+.videoContainer{
+flex:1;
+position:relative;
+}
+
+#videoContainer iframe{
+width:100%;
+height:75vh;
+border:none;
+}
+
+/* SAĞ PANEL */
+.episodes{
+width:260px;
+height:calc(100vh - 80px);
+overflow-y:auto;
+background:#020617;
+padding:10px;
+}
+
+.ep{
+padding:10px;
+border-radius:6px;
+cursor:pointer;
+margin-bottom:5px;
+background:#1e293b;
+}
+
+.ep:hover{background:#334155}
+
+/* BUTON */
+.overlay{
+position:absolute;
+padding:10px 15px;
+background:#000a;
+border-radius:10px;
+cursor:pointer;
+}
+
+#skip{
+left:20px;
+top:50%;
+transform:translateY(-50%);
+display:none;
+}
+
+#next{
+right:20px;
+top:50%;
+transform:translateY(-50%);
+display:none;
+}
 </style>
 </head>
 
@@ -65,41 +90,176 @@
 <div id="main" class="container"></div>
 
 <div id="playerPage">
-    <div class="videoContainer" id="playerWrapper">
-        <div id="videoContainer"></div>
-        <div id="skip" class="overlay" onclick="skipIntro()">Intro Atla</div>
-        <div id="next" class="overlay" onclick="nextEpisode()">Sonraki Bölüm ▶</div>
-    </div>
-    <div class="episodes" id="episodes"></div>
+
+  <div class="videoContainer">
+    <div id="videoContainer"></div>
+    <div id="skip" class="overlay" onclick="skipIntro()">Intro Atla</div>
+    <div id="next" class="overlay" onclick="nextEpisode()">Sonraki ▶</div>
+  </div>
+
+  <div id="episodes" class="episodes"></div>
+
 </div>
 
 <script src="https://www.youtube.com/iframe_api"></script>
 
 <script>
-let ytReady = false;
-function onYouTubeIframeAPIReady() { ytReady = true; }
+let ytReady=false;
+function onYouTubeIframeAPIReady(){ ytReady=true; }
 
-const data = {
-    s1: ["_JKNDCvPc3A", "4jHoj5geuJ8", "50jkNwbNYFs", "rWOJMX9xDyA", "JVw2OrBg0Os", "qCJhIAHU7c8"],
-    s3: ["x8m58gu", "x8m58gv", "x8m58gw"] // Örnek Dailymotion ID'leri güncellendi
+/* DATA */
+const data={
+s1:[
+"_JKNDCvPc3A","4jHoj5geuJ8","50jkNwbNYFs",
+"rWOJMX9xDyA","JVw2OrBg0Os","qCJhIAHU7c8"
+],
+s3:["xa2flcw","xa2fu2s","xa2fu2u"]
 };
 
-const titles = { s1: "BeyBlade: Metal Fusion", s3: "BeyBlade: Metal Fury" };
-const images = {
-    s1: "https://i.imgur.com/L8otzmh.jpg",
-    s3: "https://i.imgur.com/Ttv8Bg9.jpg"
+const titles={s1:"Metal Fusion",s3:"Metal Fury"};
+const images={
+s1:"https://i.imgur.com/L8otzmh.jpg",
+s3:"https://i.imgur.com/Ttv8Bg9.jpg"
 };
 
-let currentSeason = null;
-let currentEpisode = 0;
-let currentTime = 0;
-let player = null;
-let timer = null;
+let currentSeason=null;
+let currentEpisode=0;
+let player=null;
+let currentTime=0;
+let timer=null;
 
-const btnSkip = document.getElementById("skip");
-const btnNext = document.getElementById("next");
+/* HOME */
+function loadHome(){
+const main=document.getElementById("main");
+main.innerHTML="";
+Object.keys(data).forEach(s=>{
+const row=document.createElement("div");
+row.className="row";
+row.innerHTML=`
+<h2>${titles[s]}</h2>
+<div class="card" style="background-image:url(${images[s]})"
+onclick="openSeason('${s}')"></div>`;
+main.appendChild(row);
+});
+}
 
-function loadHome() {
-    const main = document.getElementById("main");
-    main.style.display = "flex";
-    document.getElementById("
+/* OPEN */
+function openSeason(s){
+currentSeason=s;
+currentEpisode=0;
+
+main.style.display="none";
+playerPage.style.display="flex";
+
+loadEpisodes();
+loadVideo();
+}
+
+/* EPISODES */
+function loadEpisodes(){
+episodes.innerHTML="";
+data[currentSeason].forEach((v,i)=>{
+const d=document.createElement("div");
+d.className="ep";
+d.innerText="Bölüm "+(i+1);
+d.onclick=()=>{
+currentEpisode=i;
+loadVideo();
+};
+episodes.appendChild(d);
+});
+}
+
+/* VIDEO */
+function loadVideo(){
+clearInterval(timer);
+currentTime=0;
+
+videoContainer.innerHTML="";
+
+const v=data[currentSeason][currentEpisode];
+
+if(currentSeason==="s1"){
+if(!ytReady){setTimeout(loadVideo,500);return;}
+
+player=new YT.Player('videoContainer',{
+videoId:v,
+playerVars:{autoplay:1},
+events:{
+onReady:(e)=>{
+e.target.playVideo();
+startTimer();
+}
+}
+});
+
+}else{
+videoContainer.innerHTML=`<iframe src="https://www.dailymotion.com/embed/video/${v}?autoplay=1"></iframe>`;
+player=null;
+startTimer();
+}
+}
+
+/* TIMER */
+function startTimer(){
+clearInterval(timer);
+
+timer=setInterval(()=>{
+if(player && player.getCurrentTime){
+currentTime=Math.floor(player.getCurrentTime());
+}else{
+currentTime++;
+}
+
+/* INTRO */
+if(currentTime>2){
+skip.style.display="block";
+}
+if(currentTime>=44){
+skip.style.display="none";
+}
+
+/* NEXT */
+if(currentTime>=1230){
+next.style.display="block";
+}
+
+},1000);
+}
+
+/* SKIP */
+function skipIntro(){
+if(player){
+player.seekTo(44,true);
+player.playVideo(); // KRİTİK FIX
+}
+skip.style.display="none";
+}
+
+/* NEXT */
+function nextEpisode(){
+if(currentEpisode < data[currentSeason].length-1){
+currentEpisode++;
+loadVideo();
+}
+}
+
+/* HOME */
+function goHome(){
+main.style.display="block";
+playerPage.style.display="none";
+
+if(player){
+player.destroy();
+player=null;
+}
+
+videoContainer.innerHTML="";
+clearInterval(timer);
+}
+
+loadHome();
+</script>
+
+</body>
+</html>
