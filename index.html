@@ -5,85 +5,43 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DarkNebula.net - Beyblade Arena</title>
 <style>
-/* ---------------- Temel ---------------- */
-body {margin:0; font-family:'Arial', sans-serif; background:#1a1a2e; color:#f5f5f5;}
-header {display:flex; justify-content:space-between; align-items:center; background:#162447; padding:15px 20px; box-shadow:0 4px 10px rgba(0,0,0,0.5);}
-header h1 {color:#e94560; font-size:26px; font-weight:bold;}
-.toggle {cursor:pointer; background:#e94560; border:none; padding:8px 14px; border-radius:12px; color:#f5f5f5; font-weight:bold; font-size:14px;}
+body {margin:0;font-family:Arial,sans-serif;background:#1a1a2e;color:#f5f5f5;}
+header {display:flex;justify-content:space-between;align-items:center;background:#162447;padding:15px 20px;box-shadow:0 4px 10px rgba(0,0,0,0.5);}
+header h1 {color:#e94560;font-size:26px;font-weight:bold;}
+.toggle {cursor:pointer;background:#e94560;border:none;padding:8px 14px;border-radius:12px;color:#f5f5f5;font-weight:bold;font-size:14px;}
 
-/* ---------------- Ana ekran ---------------- */
-#seasons {
-  display:grid;
-  grid-template-columns: repeat(auto-fit,minmax(160px,1fr));
-  gap:15px;
-  padding:20px;
-}
-.season-card {
-  background-size:cover;
-  background-position:center;
-  border-radius:20px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  font-size:20px;
-  font-weight:bold;
-  cursor:pointer;
-  text-align:center;
-  color:#fff;
-  box-shadow:0 4px 15px rgba(233,69,96,0.4);
-  transition: transform 0.3s, box-shadow 0.3s;
-  text-shadow: 2px 2px 6px rgba(0,0,0,0.7);
-}
-.season-card:hover {transform:scale(1.05); box-shadow:0 8px 25px rgba(233,69,96,0.7);}
+/* Ana ekran */
+#seasons {display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;padding:20px;}
+.season-card {background-size:cover;background-position:center;border-radius:20px;display:flex;justify-content:center;align-items:center;font-size:22px;font-weight:bold;cursor:pointer;text-align:center;color:#fff;box-shadow:0 4px 15px rgba(233,69,96,0.4);transition: transform 0.3s, box-shadow 0.3s;text-shadow:2px 2px 6px rgba(0,0,0,0.7);}
+.season-card:hover {transform:scale(1.05);box-shadow:0 8px 25px rgba(233,69,96,0.7);}
 
-/* ---------------- Bölümler ---------------- */
-#episodes {display:none; padding:20px;}
-.back {margin-bottom:15px; padding:12px 18px; background:#e94560; color:#f5f5f5; border:none; border-radius:12px; cursor:pointer; font-weight:bold; font-size:14px;}
-.container {display:grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap:15px;}
-.card {background:#0f0f1a; border-radius:15px; overflow:hidden; cursor:pointer; transition:transform 0.3s, box-shadow 0.3s; box-shadow:0 4px 15px rgba(233,69,96,0.3);}
-.card:hover {transform:scale(1.05); box-shadow:0 6px 20px rgba(233,69,96,0.6);}
-.card img {width:100%; height:150px; object-fit:cover; border-radius:10px 10px 0 0;}
-.card h3 {padding:10px; font-size:14px; text-align:center; color:#f5f5f5;}
+/* Bölüm sayfası */
+#episodePage {display:none;padding:10px;}
+.videoContainer {position:relative;width:100%;padding-top:56.25%;}
+.videoContainer iframe {position:absolute;top:0;left:0;width:100%;height:100%;border:none;border-radius:10px;}
+.episodeControls {display:flex;justify-content:space-between;margin:10px 0;}
+.episodeControls button {background:#e94560;border:none;padding:8px 12px;border-radius:8px;color:#f5f5f5;font-weight:bold;cursor:pointer;}
+#episodeList {display:flex;overflow-x:auto;gap:10px;padding:10px;}
+.episodeCard {padding:8px 12px;border-radius:8px;background:#333;cursor:pointer;white-space:nowrap;flex:0 0 auto;}
+.episodeCard.activeEp {border:2px solid #e94560;font-weight:bold;color:#e94560;}
 
-/* ---------------- Modal Video ---------------- */
-.modal {
-  display:none;
-  position:fixed;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.95);
-  justify-content:center;
-  align-items:center;
-  z-index:999;
-}
-.modal iframe {
-  width:90%;
-  height:50vw; /* 16:9 oranı */
-  max-height:90vh;
-  border:none;
-  border-radius:15px;
-}
-@media (orientation: landscape){
-  .modal iframe {width:auto; height:100vh;}
-}
-
-/* ---------------- Light Mode ---------------- */
-body.light {background:#f5f5f5; color:#111;}
-body.light header {background:#dfe6e9;}
-body.light .toggle {color:#111; background:#e94560;}
-body.light .season-card {background:#e0e0e0; color:#111;}
-body.light .card {background:#e0e0e0; color:#111;}
-body.light .back {background:#162447; color:#f5f5f5;}
+/* Light Mode */
+body.light{background:#f5f5f5;color:#111;}
+body.light header{background:#dfe6e9;}
+body.light .toggle{color:#111;background:#e94560;}
+body.light .season-card{color:#111;}
+body.light .episodeCard{background:#ddd;color:#111;}
+body.light .episodeCard.activeEp{border:2px solid #e94560;color:#e94560;}
+body.light .episodeControls button{background:#e94560;color:#f5f5f5;}
 </style>
 </head>
 <body>
-
 <header>
 <h1>DarkNebula.net</h1>
 <button class="toggle" onclick="toggleMode()">🌙/☀️</button>
 </header>
 
-<!-- Ana Ekran: 4 Sezon -->
+<!-- Ana ekran: Sezonlar -->
 <div id="seasons">
 <div class="season-card" style="background-image:url('https://i.imgur.com/L8otzmh.jpg');" onclick="openSeason('s1')">Metal Fusion</div>
 <div class="season-card" style="background-image:url('https://i.imgur.com/epo5CCa.jpg');" onclick="openSeason('s2')">Metal Masters</div>
@@ -91,77 +49,68 @@ body.light .back {background:#162447; color:#f5f5f5;}
 <div class="season-card" style="background-image:url('https://i.imgur.com/PeMQ2VF.jpg');" onclick="openSeason('s4')">Shogun Steel</div>
 </div>
 
-<!-- Bölümler -->
-<div id="episodes">
-<button class="back" onclick="goBack()">⬅ Geri</button>
-<div class="container" id="episodeList"></div>
-</div>
-
-<!-- Video Modal -->
-<div class="modal" id="videoModal" onclick="closeVideo()">
+<!-- Bölüm sayfası -->
+<div id="episodePage">
+<div class="videoContainer">
 <iframe id="videoFrame" src="" allowfullscreen></iframe>
+</div>
+<div class="episodeControls">
+<button id="prevBtn" onclick="prevEpisode()">⬅ Önceki</button>
+<button id="nextBtn" onclick="nextEpisode()">Sonraki ➡</button>
+</div>
+<div id="episodeList"></div>
+<button onclick="backToSeasons()" style="margin-top:10px;padding:10px 15px;background:#e94560;color:#fff;border:none;border-radius:8px;">⬅ Sezonlara Dön</button>
 </div>
 
 <script>
 // ---------------- Bölüm verileri ----------------
-const data = {
-s1:[
-    {title:"Metal Fusion 1. Bölüm", link:"https://www.dailymotion.com/embed/video/VIDEO_ID_1", image:"https://i.imgur.com/10.jpg"},
-    {title:"Metal Fusion 2. Bölüm", link:"https://www.dailymotion.com/embed/video/VIDEO_ID_2", image:"https://i.imgur.com/10.jpg"}
-],
-s2:[
-    {title:"Metal Masters 1. Bölüm", link:"https://www.dailymotion.com/embed/video/VIDEO_ID_3", image:"https://i.imgur.com/10.jpg"},
-    {title:"Metal Masters 2. Bölüm", link:"https://www.dailymotion.com/embed/video/VIDEO_ID_4", image:"https://i.imgur.com/10.jpg"}
-],
-s3:[
-    {title:"Metal Fury 1. Bölüm", link:"https://www.dailymotion.com/embed/video/xa2flcw", image:"https://i.imgur.com/10.jpg"},
-    {title:"Metal Fury 2. Bölüm", link:"https://www.dailymotion.com/embed/video/xa2fu2s", image:"https://i.imgur.com/10.jpg"},
-    {title:"Metal Fury 3. Bölüm", link:"https://www.dailymotion.com/embed/video/xa2fu2u", image:"https://i.imgur.com/10.jpg"},
-    {title:"Metal Fury 4. Bölüm", link:"https://www.dailymotion.com/embed/video/xa2fu2y", image:"https://i.imgur.com/10.jpg"},
-    {title:"Metal Fury 5. Bölüm", link:"https://www.dailymotion.com/embed/video/xa2fu2w", image:"https://i.imgur.com/10.jpg"}
-],
-s4:[
-    {title:"Shogun Steel 1. Bölüm", link:"https://www.dailymotion.com/embed/video/VIDEO_ID_7", image:"https://i.imgur.com/10.jpg"},
-    {title:"Shogun Steel 2. Bölüm", link:"https://www.dailymotion.com/embed/video/VIDEO_ID_8", image:"https://i.imgur.com/10.jpg"}
-]
+const seasonData = {
+s1:[ {title:"1. Bölüm",link:"https://www.dailymotion.com/embed/video/VIDEO_ID_1"}, {title:"2. Bölüm",link:"https://www.dailymotion.com/embed/video/VIDEO_ID_2"} ],
+s2:[ {title:"1. Bölüm",link:"https://www.dailymotion.com/embed/video/VIDEO_ID_3"}, {title:"2. Bölüm",link:"https://www.dailymotion.com/embed/video/VIDEO_ID_4"} ],
+s3:[ {title:"1. Bölüm",link:"https://www.dailymotion.com/embed/video/xa2flcw"}, {title:"2. Bölüm",link:"https://www.dailymotion.com/embed/video/xa2fu2s"}, {title:"3. Bölüm",link:"https://www.dailymotion.com/embed/video/xa2fu2u"}, {title:"4. Bölüm",link:"https://www.dailymotion.com/embed/video/xa2fu2y"}, {title:"5. Bölüm",link:"https://www.dailymotion.com/embed/video/xa2fu2w"} ],
+s4:[ {title:"1. Bölüm",link:"https://www.dailymotion.com/embed/video/VIDEO_ID_7"}, {title:"2. Bölüm",link:"https://www.dailymotion.com/embed/video/VIDEO_ID_8"} ]
 };
+let currentSeason = "";
+let currentEp = 0;
 
 // ---------------- Fonksiyonlar ----------------
 function openSeason(season){
-    document.getElementById("seasons").style.display="none";
-    document.getElementById("episodes").style.display="block";
-    const list=document.getElementById("episodeList");
-    list.innerHTML="";
-    data[season].forEach(ep=>{
-        list.innerHTML+=`
-        <div class="card" onclick="openVideo('${ep.link}')">
-            <img src="${ep.image}">
-            <h3>${ep.title}</h3>
-        </div>`;
-    });
+currentSeason = season;
+currentEp = 0;
+document.getElementById("seasons").style.display="none";
+document.getElementById("episodePage").style.display="block";
+openEpisode(currentSeason,currentEp);
 }
 
-function goBack(){
-    document.getElementById("episodes").style.display="none";
-    document.getElementById("seasons").style.display="grid";
+function openEpisode(season,index){
+currentEp=index;
+document.getElementById("videoFrame").src = seasonData[season][index].link+"?autoplay=1";
+renderEpisodeList(season);
+updateControls();
 }
 
-function openVideo(link){
-    const modal=document.getElementById("videoModal");
-    const frame=document.getElementById("videoFrame");
-    frame.src=link+"?autoplay=1";
-    modal.style.display="flex";
+function renderEpisodeList(season){
+const list=document.getElementById("episodeList");
+list.innerHTML="";
+seasonData[season].forEach((ep,i)=>{
+const card=document.createElement("div");
+card.className="episodeCard";
+if(i===currentEp) card.classList.add("activeEp");
+card.innerText=ep.title;
+card.onclick=()=>openEpisode(season,i);
+list.appendChild(card);
+});
 }
 
-function closeVideo(){
-    const modal=document.getElementById("videoModal");
-    const frame=document.getElementById("videoFrame");
-    frame.src="";
-    modal.style.display="none";
+function updateControls(){
+document.getElementById("prevBtn").style.display=currentEp>0?"inline-block":"none";
+document.getElementById("nextBtn").style.display=currentEp<seasonData[currentSeason].length-1?"inline-block":"none";
 }
 
+function nextEpisode(){if(currentEp<seasonData[currentSeason].length-1){openEpisode(currentSeason,currentEp+1);}}
+function prevEpisode(){if(currentEp>0){openEpisode(currentSeason,currentEp-1);}}
+function backToSeasons(){document.getElementById("episodePage").style.display="none";document.getElementById("seasons").style.display="grid";}
 function toggleMode(){document.body.classList.toggle("light");}
 </script>
-
 </body>
 </html>
