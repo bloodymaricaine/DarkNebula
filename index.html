@@ -43,7 +43,7 @@ header{position:fixed;width:100%;top:0;text-align:center;padding:15px;font-size:
 <script>
 const data={
 s1:["_JKNDCvPc3A","4jHoj5geuJ8","50jkNwbNYFs"],
-s2:[],
+s2:[], 
 s3:["xa2flcw","xa2fu2s","xa2fu2u"],
 s4:[]
 };
@@ -55,6 +55,7 @@ let currentSeason=null,currentEpisode=0,currentTime=0,player=null,timer=null,sta
 function loadHome(){
   const main=document.getElementById("main"); main.innerHTML="";
   Object.keys(data).forEach(s=>{
+    if(data[s].length===0) return; // boş sezonları gösterme
     const row=document.createElement("div"); row.className="row";
     const title=document.createElement("h2"); title.innerText=titles[s];
     const card=document.createElement("div"); card.className="card"; card.style.backgroundImage=`url(${images[s]})`;
@@ -128,7 +129,11 @@ function skipIntro(){
   document.getElementById("skip").style.display="none";
 }
 
-function nextEpisode(){if(currentEpisode<data[currentSeason].length-1){currentEpisode++; currentTime=0; started=false; loadVideo();}}
+function nextEpisode(){
+  if(currentEpisode<data[currentSeason].length-1){
+    currentEpisode++; currentTime=0; started=false; loadVideo();
+  }
+}
 
 function goHome(){
   document.getElementById("main").style.display="block";
