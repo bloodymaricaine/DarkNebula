@@ -46,11 +46,11 @@ header{position:fixed;width:100%;top:0;text-align:center;padding:15px;font-size:
 <script src="https://www.youtube.com/iframe_api"></script>
 <script>
 const data={
-s1:["_JKNDCvPc3A","4jHoj5geuJ8","50jkNwbNYFs","rWOJMX9xDyA","JVw2OrBg0Os","qCJhIAHU7c8","AjNAan3r_EQ","PBoW0shkDIo","xBou90Yk1i4","ZWxmhgtYBx4","QVPvEd4N81Y","FTsaUUU_P3M","3I7S6TjJ7A8","mJ7NWV-6jH8","H6L-jLRKpww","eyILMmMe_7E","eaFIR8BWqeQ","G-hrjJ3Nr8k","GsPRKoos0WM","vS0i3JIncaw","7tB3w0-vFzI","2qsQ8edARcU","8M1tc4nAhJg"],
-s2:[], s3:["xa2flcw","xa2fu2s","xa2fu2u","xa2fu2y","xa2fu2w"], s4:[]
+s1:["_JKNDCvPc3A","4jHoj5geuJ8","50jkNwbNYFs"], // örnek kısa liste
+s3:["xa2flcw","xa2fu2s","xa2fu2u"]
 };
-const titles={s1:"Metal Fusion",s2:"Metal Masters",s3:"Metal Fury",s4:"Shogun Steel"};
-const images={s1:"https://i.imgur.com/L8otzmh.jpg",s2:"https://i.imgur.com/epo5CCa.jpg",s3:"https://i.imgur.com/Ttv8Bg9.jpg",s4:"https://i.imgur.com/PeMQ2VF.jpg"};
+const titles={s1:"Metal Fusion",s3:"Metal Fury"};
+const images={s1:"https://i.imgur.com/L8otzmh.jpg",s3:"https://i.imgur.com/Ttv8Bg9.jpg"};
 
 let currentSeason=null,currentEpisode=0,currentTime=0,player=null,timer=null,started=false;
 
@@ -86,8 +86,8 @@ function loadEpisodes(){
   });
 }
 
-/* YouTube Player API */
-function onYouTubeIframeAPIReady(){}
+/* YouTube API hazır olunca video yükle */
+function onYouTubeIframeAPIReady(){ if(currentSeason) loadVideo(); }
 
 /* Load video */
 function loadVideo(){
@@ -96,22 +96,19 @@ function loadVideo(){
   container.innerHTML="";
   const v=data[currentSeason][currentEpisode];
 
-  if(currentSeason==="s1"||currentSeason==="s2"){
+  if(currentSeason==="s1"){ // YouTube
     player=new YT.Player('videoContainer',{
       width:'100%', height:'75vh', videoId:v,
       playerVars:{autoplay:1,start:currentTime,rel:0,modestbranding:1},
-      events:{
-        'onReady':()=>{player.seekTo(currentTime,true); player.playVideo(); startTimer();}
-      }
+      events:{'onReady':()=>{player.seekTo(currentTime,true); player.playVideo(); startTimer();}}
     });
-  } else {
+  } else { // Dailymotion
     const iframe=document.createElement("iframe");
     iframe.src=`https://www.dailymotion.com/embed/video/${v}?autoplay=1&start=${currentTime}`;
     iframe.allow="autoplay; fullscreen";
     iframe.className="video";
     container.appendChild(iframe);
-    player=null;
-    startTimer();
+    player=null; startTimer();
   }
 
   document.getElementById("skip").style.display="none";
@@ -123,11 +120,8 @@ function loadVideo(){
 function startTimer(){
   clearInterval(timer);
   timer=setInterval(()=>{
-    if(player && player.getCurrentTime){
-      currentTime=Math.floor(player.getCurrentTime());
-    } else {
-      currentTime+=1; // Dailymotion basit sayım
-    }
+    if(player && player.getCurrentTime){currentTime=Math.floor(player.getCurrentTime());}
+    else{currentTime+=1;}
     saveProgress();
     if(currentTime>1 && !started){started=true; document.getElementById("skip").style.display="block";}
     if(currentTime>=44){document.getElementById("skip").style.display="none";}
@@ -136,7 +130,7 @@ function startTimer(){
   },1000);
 }
 
-/* Intro */
+/* Intro Atla */
 function skipIntro(){
   currentTime=44;
   if(player && player.seekTo){player.seekTo(currentTime,true); player.playVideo();}
