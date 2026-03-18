@@ -5,53 +5,67 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Melflix - Beyblade</title>
     <style>
-        :root { --bg: #020617; --card-bg: #1e293b; --accent: #3b82f6; }
-        body { margin: 0; background: #0b0f1a; color: #fff; font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
+        :root { --bg: #020617; --card-bg: #1e293b; --accent: #3b82f6; --text: #f8fafc; }
+        body { margin: 0; background: #0b0f1a; color: var(--text); font-family: 'Segoe UI', Roboto, sans-serif; overflow-x: hidden; }
         
-        header { position: fixed; width: 100%; top: 0; text-align: center; padding: 15px; font-size: 26px; background: var(--bg); cursor: pointer; z-index: 100; box-shadow: 0 4px 15px rgba(0,0,0,0.7); font-weight: bold; color: var(--accent); }
+        header { position: fixed; width: 100%; top: 0; text-align: center; padding: 15px 0; font-size: 28px; background: var(--bg); cursor: pointer; z-index: 1000; box-shadow: 0 4px 20px rgba(0,0,0,0.8); font-weight: 800; color: var(--accent); letter-spacing: 2px; }
         
-        .container { padding: 100px 20px 20px; display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; }
-        .row { text-align: center; width: 240px; }
-        .card { width: 100%; height: 320px; border-radius: 15px; background-size: cover; background-position: center; cursor: pointer; transition: 0.4s; border: 3px solid transparent; }
-        .card:hover { transform: translateY(-10px); border-color: var(--accent); box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3); }
+        /* Ana Ekran */
+        .container { padding: 120px 20px 40px; display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; min-height: 100vh; box-sizing: border-box; }
+        .row { text-align: center; width: 240px; transition: 0.3s; }
+        .row h3 { margin-bottom: 15px; font-size: 18px; color: #cbd5e1; }
+        .card { width: 100%; height: 340px; border-radius: 16px; background-color: var(--card-bg); background-size: cover; background-position: center; cursor: pointer; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 3px solid transparent; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); }
+        .card:hover { transform: scale(1.05); border-color: var(--accent); box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.4); }
 
-        #playerPage { display: none; padding-top: 80px; height: calc(100vh - 80px); }
+        /* Player Sayfası */
+        #playerPage { display: none; padding-top: 80px; height: calc(100vh - 80px); animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
         .player-layout { display: flex; height: 100%; padding: 20px; gap: 20px; box-sizing: border-box; }
         
-        /* Video Alanı */
-        .video-main { flex: 3; position: relative; background: #000; border-radius: 12px; overflow: hidden; aspect-ratio: 16/9; }
-        #videoContainer { width: 100%; height: 100%; }
+        @media (max-width: 1000px) { 
+            .player-layout { flex-direction: column; height: auto; overflow-y: auto; }
+            .episodes-sidebar { max-width: 100% !important; min-height: 400px; }
+            .video-main { width: 100%; }
+        }
+
+        .video-main { flex: 3; position: relative; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); align-self: flex-start; }
+        .video-ratio { position: relative; width: 100%; padding-top: 56.25%; /* 16:9 Aspect Ratio */ }
+        #videoContainer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         iframe { width: 100%; height: 100%; border: none; }
 
-        /* Sağ Bölüm Listesi */
-        .episodes-sidebar { flex: 1; background: var(--bg); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #1e293b; }
-        .sidebar-header { padding: 15px; background: #1e293b; font-weight: bold; border-bottom: 1px solid #334155; }
-        .ep-list { overflow-y: auto; flex: 1; padding: 10px; }
-        .ep-item { padding: 12px; background: #0f172a; margin-bottom: 8px; border-radius: 6px; cursor: pointer; transition: 0.2s; border-left: 4px solid transparent; }
-        .ep-item:hover { background: #1e293b; border-left-color: var(--accent); }
-        .ep-item.active { background: var(--accent); color: white; }
+        /* Sidebar */
+        .episodes-sidebar { flex: 1; background: var(--bg); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #1e293b; max-width: 380px; }
+        .sidebar-header { padding: 20px; background: #1e293b; font-weight: bold; font-size: 20px; color: var(--accent); border-bottom: 2px solid #0f172a; }
+        .ep-list { overflow-y: auto; flex: 1; padding: 15px; }
+        .ep-item { padding: 14px; background: #0f172a; margin-bottom: 10px; border-radius: 8px; cursor: pointer; transition: 0.3s; border-left: 5px solid transparent; display: flex; justify-content: space-between; }
+        .ep-item:hover { background: #1e293b; transform: translateX(5px); }
+        .ep-item.active { background: var(--accent); color: white; border-left-color: #fff; font-weight: bold; }
 
-        /* Butonlar */
-        .overlay-btn { position: absolute; padding: 12px 25px; background: rgba(0,0,0,0.8); color: white; border: 2px solid var(--accent); cursor: pointer; display: none; border-radius: 30px; font-weight: bold; z-index: 50; transition: 0.3s; }
-        .overlay-btn:hover { background: var(--accent); }
-        #skipBtn { left: 30px; bottom: 40px; }
+        /* Buton */
+        .overlay-btn { position: absolute; padding: 14px 28px; background: rgba(0,0,0,0.9); color: white; border: 2px solid var(--accent); cursor: pointer; display: none; border-radius: 50px; font-weight: bold; z-index: 100; bottom: 40px; left: 30px; transition: 0.2s; box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
+        .overlay-btn:hover { background: var(--accent); transform: scale(1.1); }
 
-        /* Custom Scrollbar */
-        .ep-list::-webkit-scrollbar { width: 6px; }
+        /* Scrollbar */
+        .ep-list::-webkit-scrollbar { width: 8px; }
+        .ep-list::-webkit-scrollbar-track { background: #020617; }
         .ep-list::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        .ep-list::-webkit-scrollbar-thumb:hover { background: var(--accent); }
     </style>
 </head>
 <body>
 
-<header id="logo">Melflix</header>
+<header onclick="goHome()">Melflix</header>
 
 <div id="main" class="container"></div>
 
 <div id="playerPage">
     <div class="player-layout">
         <div class="video-main">
-            <div id="videoContainer"></div>
-            <div id="skipBtn" class="overlay-btn">Intro Atla</div>
+            <div class="video-ratio">
+                <div id="videoContainer"></div>
+            </div>
+            <div id="skipBtn" class="overlay-btn" onclick="skipIntro()">Intro Atla</div>
         </div>
         <div class="episodes-sidebar">
             <div class="sidebar-header" id="seasonTitle">Bölümler</div>
@@ -63,9 +77,9 @@
 <script>
 const data = {
     s1: ["_JKNDCvPc3A", "4jHoj5geuJ8", "50jkNwbNYFs", "rWOJMX9xDyA", "JVw2OrBg0Os", "qCJhIAHU7c8"],
-    s2: ["YvJkE209XBo", "59C8F-1B_0I"], // Örnek Youtube
-    s3: ["x8m58gu", "x8m58gv", "x8m58gw"], // Dailymotion
-    s4: ["m5GZ6e8q6eM"] // Örnek Youtube
+    s2: ["YvJkE209XBo", "59C8F-1B_0I"],
+    s3: ["x8m58gu", "x8m58gv", "x8m58gw"], // Dailymotion (Metal Fury)
+    s4: ["m5GZ6e8q6eM"]
 };
 
 const config = {
@@ -83,93 +97,98 @@ let currentS = null;
 let currentE = 0;
 let player = null;
 let timer = null;
+let dmSimulatedTime = 0;
 
-// YouTube API
+// YouTube API yükleme
 const tag = document.createElement('script');
 tag.src = "https://www.youtube.com/iframe_api";
 document.head.appendChild(tag);
+
 function onYouTubeIframeAPIReady() { ytApiReady = true; }
 
-// DOM
-const main = document.getElementById("main");
-const playerPage = document.getElementById("playerPage");
-const videoBox = document.getElementById("videoContainer");
-const epList = document.getElementById("epList");
-const skipBtn = document.getElementById("skipBtn");
-
-function init() {
-    main.innerHTML = "";
+function loadHome() {
+    clearInterval(timer);
+    if(player && player.destroy) player.destroy();
+    
+    const mainArea = document.getElementById("main");
+    const playerArea = document.getElementById("playerPage");
+    mainArea.style.display = "flex";
+    playerArea.style.display = "none";
+    mainArea.innerHTML = "";
+    
     Object.keys(data).forEach(s => {
         const div = document.createElement("div");
         div.className = "row";
-        div.innerHTML = `<h3>${config.titles[s]}</h3><div class="card" style="background-image:url(${config.images[s]})"></div>`;
-        div.querySelector(".card").onclick = () => openSeason(s);
-        main.appendChild(div);
+        div.innerHTML = `<h3>${config.titles[s]}</h3><div class="card" style="background-image:url('${config.images[s]}')" onclick="openSeason('${s}')"></div>`;
+        mainArea.appendChild(div);
     });
 }
 
 function openSeason(s) {
     currentS = s;
     currentE = 0;
-    main.style.display = "none";
-    playerPage.style.display = "block";
+    document.getElementById("main").style.display = "none";
+    document.getElementById("playerPage").style.display = "block";
     document.getElementById("seasonTitle").innerText = config.titles[s];
-    renderEpisodes();
     loadVideo();
 }
 
-function renderEpisodes() {
-    epList.innerHTML = "";
+function renderSidebar() {
+    const list = document.getElementById("epList");
+    list.innerHTML = "";
     data[currentS].forEach((_, i) => {
         const item = document.createElement("div");
         item.className = `ep-item ${i === currentE ? 'active' : ''}`;
-        item.innerText = `${i + 1}. Bölüm`;
-        item.onclick = () => { currentE = i; loadVideo(); };
-        epList.appendChild(item);
+        item.innerHTML = `<span>${i + 1}. Bölüm</span> <span>▶</span>`;
+        item.onclick = () => { if(currentE !== i) { currentE = i; loadVideo(); } };
+        list.appendChild(item);
     });
+    // Aktif bölüme scroll yap
+    const active = list.querySelector(".active");
+    if(active) active.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function loadVideo() {
     clearInterval(timer);
+    dmSimulatedTime = 0;
+    const videoBox = document.getElementById("videoContainer");
+    const skipBtn = document.getElementById("skipBtn");
     videoBox.innerHTML = "";
     skipBtn.style.display = "none";
-    const id = data[currentS][currentE];
     
-    // Aktif bölümü sidebar'da güncelle
-    document.querySelectorAll('.ep-item').forEach((el, idx) => {
-        el.classList.toggle('active', idx === currentE);
-    });
+    const id = data[currentS][currentE];
+    renderSidebar();
 
-    if (currentS !== "s3") { // YouTube Sezonları
+    if (currentS !== "s3") { // YouTube
         if (!ytApiReady) { setTimeout(loadVideo, 500); return; }
         player = new YT.Player('videoContainer', {
             videoId: id,
-            playerVars: { 'autoplay': 1, 'rel': 0 },
+            playerVars: { 'autoplay': 1, 'rel': 0, 'modestbranding': 1, 'origin': window.location.origin },
             events: {
-                'onReady': (e) => { e.target.playVideo(); startTimer(); },
+                'onReady': (e) => { e.target.playVideo(); startTracking(); },
                 'onStateChange': (e) => { if(e.data === YT.PlayerState.ENDED) nextEp(); }
             }
         });
-    } else { // Dailymotion Sezonu
-        videoBox.innerHTML = `<iframe id="dmPlayer" src="https://www.dailymotion.com/embed/video/${id}?autoplay=1" allow="autoplay; fullscreen"></iframe>`;
+    } else { // Dailymotion
+        videoBox.innerHTML = `<iframe id="dmPlayer" src="https://www.dailymotion.com/embed/video/${id}?autoplay=1&ui-logo=false" allow="autoplay; fullscreen"></iframe>`;
         player = null;
-        startTimer();
+        startTracking();
     }
 }
 
-function startTimer() {
-    let internalSec = 0;
+function startTracking() {
     timer = setInterval(() => {
         let now = 0;
         if (player && player.getCurrentTime) {
             now = player.getCurrentTime();
         } else {
-            internalSec++;
-            now = internalSec;
+            dmSimulatedTime++;
+            now = dmSimulatedTime;
         }
 
-        // Intro Atla: 44. saniyeye kadar göster
-        if (now > 2 && now < 44) {
+        const skipBtn = document.getElementById("skipBtn");
+        // 1-44 saniye arası butonu göster
+        if (now >= 2 && now <= 44) {
             skipBtn.style.display = "block";
         } else {
             skipBtn.style.display = "none";
@@ -177,23 +196,33 @@ function startTimer() {
     }, 1000);
 }
 
-skipBtn.onclick = () => {
+function skipIntro() {
     if (player && player.seekTo) {
         player.seekTo(44, true);
     } else {
-        // Dailymotion API olmadan tam saniye kontrolü zordur, iframe yenilenir
         const id = data[currentS][currentE];
-        videoBox.innerHTML = `<iframe src="https://www.dailymotion.com/embed/video/${id}?autoplay=1&start=44" allow="autoplay; fullscreen"></iframe>`;
+        document.getElementById("videoContainer").innerHTML = `<iframe src="https://www.dailymotion.com/embed/video/${id}?autoplay=1&start=44" allow="autoplay; fullscreen"></iframe>`;
+        dmSimulatedTime = 44;
     }
-    skipBtn.style.display = "none";
-};
+    document.getElementById("skipBtn").style.display = "none";
+}
 
 function nextEp() {
     if (currentE < data[currentS].length - 1) {
         currentE++;
-        renderEpisodes();
         loadVideo();
+    } else {
+        alert("Sezon tamamlandı!");
+        goHome();
     }
 }
 
-document.getElementById("logo").onclick = () => location
+function goHome() {
+    loadHome();
+}
+
+// Başlangıç
+window.onload = loadHome;
+</script>
+</body>
+</html>
