@@ -4,76 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DarkNebula.net</title>
-
 <style>
-body {
-  margin:0;
-  font-family:Arial;
-  background:#0f172a;
-  color:white;
-}
-
-header {
-  text-align:center;
-  padding:15px;
-  background:#020617;
-  font-size:26px;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-#seasons {
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:20px;
-  padding:20px;
-}
-
-.card {
-  height:160px;
-  border-radius:20px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:22px;
-  font-weight:bold;
-  cursor:pointer;
-  background-size:cover;
-  background-position:center;
-  box-shadow:0 5px 20px rgba(0,0,0,0.5);
-}
-
-#playerPage {
-  display:none;
-  padding:10px;
-}
-
-.video {
-  width:100%;
-  height:60vh;
-}
-
-#episodes {
-  display:flex;
-  overflow-x:auto;
-  gap:10px;
-  margin-top:10px;
-}
-
-.ep {
-  background:#1e293b;
-  padding:10px;
-  border-radius:10px;
-  cursor:pointer;
-  white-space:nowrap;
-}
-
-.active {
-  border:2px solid red;
-}
+body {margin:0;font-family:Arial;background:#0f172a;color:white;}
+header {text-align:center;padding:15px;background:#020617;font-size:26px;font-weight:bold;cursor:pointer;}
+#seasons {display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;padding:20px;}
+.card {height:160px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:bold;cursor:pointer;background-size:cover;background-position:center;box-shadow:0 5px 20px rgba(0,0,0,0.5);}
+#playerPage {display:none;padding:10px;}
+.video {width:100%;height:60vh;}
+#episodes {display:flex;overflow-x:auto;gap:10px;margin-top:10px;}
+.ep {background:#1e293b;padding:10px;border-radius:10px;cursor:pointer;white-space:nowrap;}
+.active {border:2px solid red;}
 </style>
 </head>
-
 <body>
 
 <header onclick="goHome()">DarkNebula.net</header>
@@ -87,69 +29,58 @@ header {
 
 <div id="playerPage">
   <iframe id="videoFrame" class="video" frameborder="0" allowfullscreen allow="autoplay"></iframe>
-
   <div id="episodes"></div>
 </div>
 
 <script>
-
 let currentSeason = "";
 let currentIndex = 0;
 
 const data = {
-  s3: [
-    "xa2flcw",
-    "xa2fu2s",
-    "xa2fu2u",
-    "xa2fu2y",
-    "xa2fu2w"
-  ]
+  s1: ["xa1","xa2","xa3"], // Metal Fusion örnek video ID’leri
+  s2: ["xb1","xb2","xb3"], // Metal Masters
+  s3: ["xa2flcw","xa2fu2s","xa2fu2u","xa2fu2y","xa2fu2w"], // Metal Fury
+  s4: ["xc1","xc2","xc3"]  // Shogun Steel
 };
 
 function openSeason(season){
   currentSeason = season;
   currentIndex = 0;
-
   document.getElementById("seasons").style.display = "none";
   document.getElementById("playerPage").style.display = "block";
-
   renderEpisodes();
-  playVideo(0);
+  playVideo(currentIndex);
 }
 
 function renderEpisodes(){
   const container = document.getElementById("episodes");
   container.innerHTML = "";
-
   data[currentSeason].forEach((vid,i)=>{
     const el = document.createElement("div");
     el.className = "ep";
-    if(i === currentIndex) el.classList.add("active");
-
+    if(i===currentIndex) el.classList.add("active");
     el.innerText = "Bölüm " + (i+1);
-
     el.onclick = () => {
-      currentIndex = i;
+      currentIndex=i;
       playVideo(i);
       renderEpisodes();
     };
-
     container.appendChild(el);
   });
 }
 
 function playVideo(i){
   const id = data[currentSeason][i];
-  document.getElementById("videoFrame").src =
-    "https://www.dailymotion.com/embed/video/" + id + "?autoplay=1";
+  const iframe = document.getElementById("videoFrame");
+  iframe.src = "https://www.dailymotion.com/embed/video/" + id + "?autoplay=1";
 }
 
 function goHome(){
   document.getElementById("playerPage").style.display = "none";
   document.getElementById("seasons").style.display = "grid";
+  // Video durdurmak için iframe'i resetle
+  document.getElementById("videoFrame").src = "";
 }
-
 </script>
-
 </body>
 </html>
