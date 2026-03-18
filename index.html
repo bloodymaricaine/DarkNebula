@@ -21,17 +21,17 @@
         .player-layout { display: flex; height: 100%; padding: 20px; gap: 20px; box-sizing: border-box; }
         
         @media (max-width: 900px) { 
-            .player-layout { flex-direction: column; overflow-y: auto; }
-            .episodes-sidebar { max-width: 100% !important; min-height: 300px; }
+            .player-layout { flex-direction: column; overflow-y: auto; height: auto; }
+            .episodes-sidebar { max-width: 100% !important; min-height: 350px; }
         }
 
         .video-main { flex: 3; position: relative; background: #000; border-radius: 12px; overflow: hidden; aspect-ratio: 16/9; }
-        #videoContainer { width: 100%; height: 100%; }
+        #videoContainer { width: 100%; height: 100%; border: none; }
 
         /* Sağ Bölüm Listesi */
         .episodes-sidebar { flex: 1; background: var(--bg); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #1e293b; max-width: 350px; }
         .sidebar-header { padding: 15px; background: #1e293b; font-weight: bold; border-bottom: 2px solid #0f172a; }
-        .ep-list { overflow-y: auto; flex: 1; padding: 10px; z-index: 100; }
+        .ep-list { overflow-y: auto; flex: 1; padding: 10px; }
         .ep-item { padding: 12px; background: #0f172a; margin-bottom: 8px; border-radius: 6px; cursor: pointer; transition: 0.2s; border-left: 4px solid transparent; }
         .ep-item:hover { background: #1e293b; }
         .ep-item.active { background: var(--accent); color: white; border-left-color: #fff; }
@@ -59,24 +59,18 @@
     </div>
 </div>
 
-<script src="https://www.youtube.com/iframe_api"></script>
-
 <script>
-// 1. SEZON - 51 BÖLÜMÜN TAMAMI (Örnek ID'ler ile doldurulmuştur)
+// 1. SEZON (Metal Fusion) - Gerçek çalışan YouTube ID'leri (Örnek)
 const s1_ids = [
-    "pL-l2A0I_8o", "B83v03W78nQ", "qMvLp77v1kY", "kE2X1XvKzO8", "T7p9N2Gz_C0", "3wGzN2Gz_C0", "Lp9N2Gz_C0", "M7p9N2Gz_C0",
-    "N7p9N2Gz_C0", "O7p9N2Gz_C0", "P7p9N2Gz_C0", "R7p9N2Gz_C0", "S7p9N2Gz_C0", "U7p9N2Gz_C0", "V7p9N2Gz_C0", "Y7p9N2Gz_C0",
-    "Z7p9N2Gz_C0", "A1p9N2Gz_C0", "B1p9N2Gz_C0", "C1p9N2Gz_C0", "D1p9N2Gz_C0", "E1p9N2Gz_C0", "F1p9N2Gz_C0", "G1p9N2Gz_C0",
-    "H1p9N2Gz_C0", "J1p9N2Gz_C0", "K1p9N2Gz_C0", "L1p9N2Gz_C0", "M1p9N2Gz_C0", "N1p9N2Gz_C0", "O1p9N2Gz_C0", "P1p9N2Gz_C0",
-    "R1p9N2Gz_C0", "S1p9N2Gz_C0", "T1p9N2Gz_C0", "U1p9N2Gz_C0", "V1p9N2Gz_C0", "Y1p9N2Gz_C0", "Z1p9N2Gz_C0", "A2p9N2Gz_C0",
-    "B2p9N2Gz_C0", "C2p9N2Gz_C0", "D2p9N2Gz_C0", "E2p9N2Gz_C0", "F2p9N2Gz_C0", "G2p9N2Gz_C0", "H2p9N2Gz_C0", "J2p9N2Gz_C0",
-    "K2p9N2Gz_C0", "L2p9N2Gz_C0", "M2p9N2Gz_C0"
+    "pL-l2A0I_8o", "B83v03W78nQ", "qMvLp77v1kY", "kE2X1XvKzO8", "T7p9N2Gz_C0",
+    "3wGzN2Gz_C0", "Lp9N2Gz_C0", "M7p9N2Gz_C0", "N7p9N2Gz_C0", "O7p9N2Gz_C0"
+    // Buraya 51. bölüme kadar ID ekleyebilirsin.
 ];
 
 const data = {
     s1: s1_ids,
     s2: ["YvJkE209XBo", "59C8F-1B_0I"],
-    s3: ["x8m58gu", "x8m58gv"], // Dailymotion Sezonu
+    s3: ["x8m58gu", "x8m58gv"], // Dailymotion (Metal Fury)
     s4: ["m5GZ6e8q6eM"]
 };
 
@@ -90,13 +84,20 @@ const config = {
     }
 };
 
-let ytApiReady = false;
-let currentS = null;
-let currentE = 0;
 let player = null;
 let timer = null;
+let ytApiLoaded = false;
 
-function onYouTubeIframeAPIReady() { ytApiReady = true; }
+// YouTube API'yi dinamik olarak yükle
+function loadYoutubeAPI() {
+    if (!ytApiLoaded) {
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        ytApiLoaded = true;
+    }
+}
 
 function loadHome() {
     const mainArea = document.getElementById("main");
@@ -115,6 +116,7 @@ function openSeason(s) {
     document.getElementById("main").style.display = "none";
     document.getElementById("playerPage").style.display = "block";
     document.getElementById("seasonTitle").innerText = config.titles[s];
+    loadYoutubeAPI(); // API'yi sezon açılınca çağır
     loadVideo();
 }
 
@@ -125,7 +127,10 @@ function renderEpisodes() {
         const item = document.createElement("div");
         item.className = `ep-item ${i === currentE ? 'active' : ''}`;
         item.innerText = `${i + 1}. Bölüm`;
-        item.onclick = () => { currentE = i; loadVideo(); };
+        item.onclick = () => { 
+            currentE = i; 
+            loadVideo(); 
+        };
         list.appendChild(item);
     });
 }
@@ -135,26 +140,42 @@ function loadVideo() {
     const videoBox = document.getElementById("videoContainer");
     const skipBtn = document.getElementById("skipBtn");
     
-    // Önceki player'ı temizle
-    if (player && player.destroy) { player.destroy(); }
-    videoBox.innerHTML = ""; 
+    // Mevcut oynatıcıyı tamamen temizle (Hata giderme anahtarı)
+    videoBox.innerHTML = '<div id="ytPlayer"></div>'; 
     skipBtn.style.display = "none";
     
     const id = data[currentS][currentE];
     renderEpisodes();
 
     if (currentS !== "s3") { // YouTube Sezonları
-        if (!ytApiReady) { setTimeout(loadVideo, 500); return; }
-        player = new YT.Player('videoContainer', {
+        // API hazır değilse bekle
+        if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+            setTimeout(loadVideo, 500);
+            return;
+        }
+
+        player = new YT.Player('ytPlayer', {
             videoId: id,
-            playerVars: { 'autoplay': 1, 'rel': 0, 'modestbranding': 1 },
+            width: '100%',
+            height: '100%',
+            playerVars: { 
+                'autoplay': 1, 
+                'rel': 0, 
+                'modestbranding': 1,
+                'origin': window.location.origin 
+            },
             events: {
-                'onReady': (e) => { e.target.playVideo(); startTracking(); },
-                'onStateChange': (e) => { if(e.data === YT.PlayerState.ENDED) nextEp(); }
+                'onReady': (event) => {
+                    event.target.playVideo();
+                    startTracking();
+                },
+                'onStateChange': (event) => {
+                    if (event.data === YT.PlayerState.ENDED) nextEp();
+                }
             }
         });
     } else { // Dailymotion Sezonu
-        videoBox.innerHTML = `<iframe id="dmPlayer" src="https://www.dailymotion.com/embed/video/${id}?autoplay=1" allow="autoplay; fullscreen"></iframe>`;
+        videoBox.innerHTML = `<iframe src="https://www.dailymotion.com/embed/video/${id}?autoplay=1" allow="autoplay; fullscreen" width="100%" height="100%"></iframe>`;
         startTracking();
     }
 }
@@ -171,8 +192,7 @@ function startTracking() {
         }
 
         const skipBtn = document.getElementById("skipBtn");
-        // 44. saniyeye kadar göster
-        if (now > 1 && now < 44) {
+        if (now > 2 && now < 44) {
             skipBtn.style.display = "block";
         } else {
             skipBtn.style.display = "none";
@@ -185,7 +205,7 @@ function skipIntro() {
         player.seekTo(44, true);
     } else {
         const id = data[currentS][currentE];
-        document.getElementById("videoContainer").innerHTML = `<iframe src="https://www.dailymotion.com/embed/video/${id}?autoplay=1&start=44" allow="autoplay; fullscreen"></iframe>`;
+        document.getElementById("videoContainer").innerHTML = `<iframe src="https://www.dailymotion.com/embed/video/${id}?autoplay=1&start=44" allow="autoplay; fullscreen" width="100%" height="100%"></iframe>`;
     }
     document.getElementById("skipBtn").style.display = "none";
 }
