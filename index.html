@@ -26,10 +26,7 @@ header h1 {color:#e94560;font-size:28px;font-weight:bold;cursor:pointer;}
 <header><h1 onclick="backToSeasons()">DarkNebula.net</h1></header>
 
 <div id="seasons">
-<div class="season-card" style="background-image:url('https://i.imgur.com/L8otzmh.jpg');" onclick="openSeason('s1')">Metal Fusion</div>
-<div class="season-card" style="background-image:url('https://i.imgur.com/epo5CCa.jpg');" onclick="openSeason('s2')">Metal Masters</div>
-<div class="season-card" style="background-image:url('https://i.imgur.com/Ttv8Bg9.jpg');" onclick="openSeason('s3')">Metal Fury</div>
-<div class="season-card" style="background-image:url('https://i.imgur.com/PeMQ2VF.jpg');" onclick="openSeason('s4')">Shogun Steel</div>
+<div class="season-card" style="background-image:url('https://i.imgur.com/L8otzmh.jpg');" onclick="openSeason('s3')">Metal Fury</div>
 </div>
 
 <div id="episodePage">
@@ -43,30 +40,24 @@ header h1 {color:#e94560;font-size:28px;font-weight:bold;cursor:pointer;}
 
 <script src="https://api.dmcdn.net/all.js"></script>
 <script>
-// ---------------- Bölüm verileri ----------------
 const seasonData = {
-s1:[ {title:"1. Bölüm", videoId:"VIDEO_ID_1"}, {title:"2. Bölüm", videoId:"VIDEO_ID_2"} ],
-s2:[ {title:"1. Bölüm", videoId:"VIDEO_ID_3"}, {title:"2. Bölüm", videoId:"VIDEO_ID_4"} ],
-s3:[ 
-  {title:"1. Bölüm", videoId:"xa2flcw"}, 
-  {title:"2. Bölüm", videoId:"xa2fu2s"}, 
-  {title:"3. Bölüm", videoId:"xa2fu2u"}, 
-  {title:"4. Bölüm", videoId:"xa2fu2y"}, 
-  {title:"5. Bölüm", videoId:"xa2fu2w"} 
-],
-s4:[ {title:"1. Bölüm", videoId:"VIDEO_ID_7"}, {title:"2. Bölüm", videoId:"VIDEO_ID_8"} ]
+  s3:[
+    {title:"1. Bölüm", videoId:"xa2flcw"},
+    {title:"2. Bölüm", videoId:"xa2fu2s"},
+    {title:"3. Bölüm", videoId:"xa2fu2u"},
+    {title:"4. Bölüm", videoId:"xa2fu2y"},
+    {title:"5. Bölüm", videoId:"xa2fu2w"}
+  ]
 };
 
 let currentSeason="", currentEp=0, player=null;
-let savedProgress = JSON.parse(localStorage.getItem("darkNebula_currentEpisode") || "null");
+let savedProgress = JSON.parse(localStorage.getItem("darkNebula_currentEpisode")||"null");
 
-// ---------------- Fonksiyonlar ----------------
 function openSeason(season){
-  currentSeason = season;
+  currentSeason=season;
   document.getElementById("seasons").style.display="none";
   document.getElementById("episodePage").style.display="block";
 
-  // Kaldığı yerden devam sorusu
   if(savedProgress && savedProgress.season === season){
     if(confirm("KALDIĞIN YERDEN DEVAM ET? OK = DEVAM, CANCEL = BAŞTAN")){
       openEpisode(savedProgress.episode, savedProgress.time || 0);
@@ -79,37 +70,34 @@ function openSeason(season){
 }
 
 function openEpisode(index, startTime=0){
-  currentEp = index;
+  currentEp=index;
   if(!player){
-    player = new DM.player(document.getElementById("player"),{
+    player = new DM.player(document.getElementById("player"), {
       video: seasonData[currentSeason][index].videoId,
       width: "100%",
       height: "100%",
-      params: {autoplay:1,controls:1,queue:0,quality:"720",logo:0}
+      params: {autoplay:1,controls:1,quality:"720",logo:0}
     });
     player.addEventListener('timeupdate', saveProgress);
   } else {
-    player.load(seasonData[currentSeason][index].videoId,{autoplay:true});
+    player.load(seasonData[currentSeason][index].videoId, {autoplay:true});
   }
 
-  // startTime varsa
-  setTimeout(()=>{
-    if(startTime>0 && player) player.seek(startTime);
-  },1000);
+  setTimeout(()=>{if(startTime>0 && player) player.seek(startTime);},1000);
 
   renderEpisodeList();
   updateControls();
 }
 
 function renderEpisodeList(){
-  const list=document.getElementById("episodeList");
+  const list = document.getElementById("episodeList");
   list.innerHTML="";
   seasonData[currentSeason].forEach((ep,i)=>{
-    const card=document.createElement("div");
+    const card = document.createElement("div");
     card.className="episodeCard";
     if(i===currentEp) card.classList.add("activeEp");
-    card.innerText=ep.title;
-    card.onclick=()=>openEpisode(i,0);
+    card.innerText = ep.title;
+    card.onclick = ()=>openEpisode(i,0);
     list.appendChild(card);
   });
 }
@@ -123,10 +111,9 @@ function nextEpisode(){if(currentEp<seasonData[currentSeason].length-1) openEpis
 function prevEpisode(){if(currentEp>0) openEpisode(currentEp-1);}
 function backToSeasons(){document.getElementById("episodePage").style.display="none";document.getElementById("seasons").style.display="grid");}
 
-// ---------------- LocalStorage ile kaldığı yeri kaydet ----------------
 function saveProgress(){
   if(player && player.currentTime){
-    localStorage.setItem("darkNebula_currentEpisode",JSON.stringify({
+    localStorage.setItem("darkNebula_currentEpisode", JSON.stringify({
       season: currentSeason,
       episode: currentEp,
       time: player.currentTime
@@ -134,9 +121,9 @@ function saveProgress(){
   }
 }
 
-// Başlangıç
 document.getElementById("seasons").style.display="grid";
 document.getElementById("episodePage").style.display="none";
 </script>
+
 </body>
 </html>
