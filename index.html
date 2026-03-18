@@ -55,7 +55,7 @@ const seasonData = {
     {title:"3. Bölüm", videoId:"xa2fu2u"}, 
     {title:"4. Bölüm", videoId:"xa2fu2y"}, 
     {title:"5. Bölüm", videoId:"xa2fu2w"} 
-    // 6-39 bölümler aynı formatta eklenebilir
+    // 6-39 bölümleri aynı formatta ekleyebilirsin
   ],
   s4:[ {title:"1. Bölüm", videoId:"VIDEO_ID_7"}, {title:"2. Bölüm", videoId:"VIDEO_ID_8"} ]
 };
@@ -68,6 +68,9 @@ function openSeason(season){
   currentSeason = season;
   document.getElementById("seasons").style.display="none";
   document.getElementById("episodePage").style.display="block";
+
+  // Bölüm listesi ve player hazır
+  renderEpisodeList();
 
   // Kaldığı yerden devam sorusu
   if(savedProgress && savedProgress.season === season){
@@ -84,6 +87,7 @@ function openSeason(season){
 function openEpisode(index, startTime=0){
   currentEp = index;
 
+  // Player yoksa oluştur
   if(!player){
     player = new DM.player(document.getElementById("player"), {
       video: seasonData[currentSeason][index].videoId,
@@ -96,9 +100,8 @@ function openEpisode(index, startTime=0){
     player.load(seasonData[currentSeason][index].videoId, {autoplay:true});
   }
 
-  setTimeout(()=>{
-    if(startTime>0 && player) player.seek(startTime);
-  },1000);
+  // Başlangıç zamanı
+  setTimeout(()=>{if(startTime>0 && player) player.seek(startTime);},1000);
 
   renderEpisodeList();
   updateControls();
