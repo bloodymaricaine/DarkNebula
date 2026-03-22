@@ -8,19 +8,21 @@
 <script src="https://api.dmcdn.net/all.js"></script>
 
 <style>
-/* CSS AYNI */
+/* SENİN CSS AYNEN */
 body{margin:0;background:#0b0f1a;color:#fff;font-family:sans-serif;overflow-x:hidden;}
-header{position:fixed;width:100%;top:0;text-align:center;padding:15px;font-size:26px;background:#020617;cursor:pointer;z-index:10;}
+header{position:fixed;width:100%;top:0;text-align:center;padding:15px;font-size:26px;background:#020617;cursor:pointer;z-index:10;box-shadow:0 2px 6px rgba(0,0,0,0.5);}
 .container{padding-top:80px}
 .row{margin:20px}
-.card{width:260px;height:340px;border-radius:12px;background-size:cover;background-position:center;cursor:pointer;}
-#playerPage{display:none;padding-top:80px;display:flex;}
-.videoContainer{flex:1;position:relative;}
+.card{width:260px;height:340px;border-radius:12px;background-size:cover;background-position:center;cursor:pointer;transition:0.3s;box-shadow:0 4px 15px rgba(0,0,0,0.4);}
+.card:hover{transform:scale(1.05);}
+.row h2{margin:0 0 10px 0;font-size:20px;}
+#playerPage{display:none;padding-top:80px;display:flex;flex-wrap:wrap;}
+.videoContainer{flex:1;position:relative;min-width:600px;}
 .video{width:100%;height:75vh;border:none;border-radius:12px;}
 .episodes{width:260px;height:calc(100vh - 80px);overflow-y:auto;background:#020617;padding:10px;}
 .ep{padding:10px;border-radius:6px;cursor:pointer;margin-bottom:5px;}
-.ep.active{background:#334155;}
-.overlay{position:absolute;padding:10px;background:rgba(30,41,59,0.8);cursor:pointer;}
+.ep.active{background:#334155;color:#fff;font-weight:bold;}
+.overlay{position:absolute;padding:10px 16px;background:rgba(30,41,59,0.8);border-radius:10px;cursor:pointer;}
 #skip{left:20px;top:50%;display:none;}
 #next{right:50%;top:50%;display:none;}
 </style>
@@ -34,7 +36,7 @@ header{position:fixed;width:100%;top:0;text-align:center;padding:15px;font-size:
 
 <div id="playerPage">
   <div class="videoContainer">
-    <iframe id="video" class="video" allowfullscreen></iframe>
+    <iframe id="video" class="video" allow="autoplay" allowfullscreen></iframe>
     <div id="skip" class="overlay" onclick="skipIntro()">Intro Atla</div>
     <div id="next" class="overlay" onclick="nextEpisode()">Sonraki ▶</div>
   </div>
@@ -43,25 +45,36 @@ header{position:fixed;width:100%;top:0;text-align:center;padding:15px;font-size:
 
 <script>
 const data = {
- s1: ["_JKNDCvPc3A"],
+ s1: [ "_JKNDCvPc3A","4jHoj5geuJ8" ],
  s2: [],
- s3: ["xa2flcw","xa2fu2s","xa2fu2u"],
+ s3: [ "xa2flcw","xa2fu2s","xa2fu2u","xa2fu2y","xa2fu2w",
+       "xa2stqm","xa2stqi","xa2stqo","xa2stqg","xa2stqk",
+       "xa2w11a","xa2w112","xa2w118","xa2w114","xa2w116" ],
  s4: []
 };
 
 const titles = {s1:"Metal Fusion", s2:"Metal Masters", s3:"Metal Fury", s4:"Shogun Steel"};
+const images = {s1:"https://i.imgur.com/L8otzmh.jpg", s2:"https://i.imgur.com/epo5CCa.jpg", s3:"https://i.imgur.com/Ttv8Bg9.jpg", s4:"https://i.imgur.com/PeMQ2VF.jpg"};
 
 let currentSeason=null, currentEpisode=0, currentTime=0, timer;
-let dmPlayer=null; // 🔥 Dailymotion player
+let dmPlayer=null;
 
 function loadHome(){
  const main=document.getElementById("main");
  main.innerHTML="";
  Object.keys(data).forEach(s=>{
   const row=document.createElement("div");
+  row.className="row";
+
+  const title=document.createElement("h2");
+  title.innerText=titles[s];
+
   const card=document.createElement("div");
   card.className="card";
+  card.style.backgroundImage=`url(${images[s]})`;
   card.onclick=()=>openSeason(s);
+
+  row.appendChild(title);
   row.appendChild(card);
   main.appendChild(row);
  });
@@ -84,7 +97,7 @@ function loadEpisodes(){
   const d=document.createElement("div");
   d.className="ep"+(i===currentEpisode?" active":"");
   d.innerText="Bölüm "+(i+1);
-  d.onclick=()=>{currentEpisode=i; play();}
+  d.onclick=()=>{currentEpisode=i; currentTime=0; play();}
   ep.appendChild(d);
  });
 }
@@ -96,22 +109,18 @@ function play(start=0){
  let v=data[currentSeason][currentEpisode];
 
  if(currentSeason==="s1"||currentSeason==="s2"){
-  // YOUTUBE
-  document.getElementById("video").src =
+   document.getElementById("video").src =
    `https://www.youtube.com/embed/${v}?autoplay=1&start=${start}`;
  }
  else{
-  // 🔥 DAILYMOTION PLAYER API
-  dmPlayer = DM.player(document.getElementById("video"), {
-    video: v,
-    params: {autoplay: true}
-  });
+   dmPlayer = DM.player(document.getElementById("video"), {
+     video: v,
+     params: {autoplay: true}
+   });
 
-  dmPlayer.addEventListener("apiready", () => {
-    if(start > 0){
-      dmPlayer.seek(start); // 🔥 BURASI FIX
-    }
-  });
+   dmPlayer.addEventListener("apiready", () => {
+     if(start>0) dmPlayer.seek(start);
+   });
  }
 
  document.getElementById("skip").style.display="none";
@@ -135,17 +144,15 @@ function skipIntro(){
 
  if(currentSeason==="s1"||currentSeason==="s2"){
    play(44);
- }
- else{
-   if(dmPlayer){
-     dmPlayer.seek(44); // 🔥 BAŞA SARMAZ ARTIK
-   }
+ }else{
+   if(dmPlayer) dmPlayer.seek(44);
  }
 }
 
 function nextEpisode(){
  if(currentEpisode<data[currentSeason].length-1){
   currentEpisode++;
+  currentTime=0;
   play();
  }
 }
