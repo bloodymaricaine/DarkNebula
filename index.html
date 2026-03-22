@@ -5,21 +5,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Melflix</title>
 
+<script src="https://api.dmcdn.net/all.js"></script>
+
 <style>
-body{margin:0;background:#0b0f1a;color:#fff;font-family:sans-serif;}
+/* CSS AYNI */
+body{margin:0;background:#0b0f1a;color:#fff;font-family:sans-serif;overflow-x:hidden;}
 header{position:fixed;width:100%;top:0;text-align:center;padding:15px;font-size:26px;background:#020617;cursor:pointer;z-index:10;}
 .container{padding-top:80px}
 .row{margin:20px}
 .card{width:260px;height:340px;border-radius:12px;background-size:cover;background-position:center;cursor:pointer;}
 #playerPage{display:none;padding-top:80px;display:flex;}
-.video{width:100%;height:75vh;border:none;}
-.episodes{width:260px;height:100vh;overflow-y:auto;background:#020617;padding:10px;}
-.ep{padding:10px;cursor:pointer}
-.ep.active{background:#334155}
-#skip{position:absolute;left:20px;top:50%;background:#334155;padding:10px;cursor:pointer;display:none;}
+.videoContainer{flex:1;position:relative;}
+.video{width:100%;height:75vh;border:none;border-radius:12px;}
+.episodes{width:260px;height:calc(100vh - 80px);overflow-y:auto;background:#020617;padding:10px;}
+.ep{padding:10px;border-radius:6px;cursor:pointer;margin-bottom:5px;}
+.ep.active{background:#334155;}
+.overlay{position:absolute;padding:10px;background:rgba(30,41,59,0.8);cursor:pointer;}
+#skip{left:20px;top:50%;display:none;}
+#next{right:50%;top:50%;display:none;}
 </style>
-
 </head>
+
 <body>
 
 <header onclick="goHome()">Melflix</header>
@@ -27,115 +33,128 @@ header{position:fixed;width:100%;top:0;text-align:center;padding:15px;font-size:
 <div id="main" class="container"></div>
 
 <div id="playerPage">
-  <div style="flex:1;position:relative;">
-    <iframe id="video" class="video" allow="autoplay" allowfullscreen></iframe>
-    <div id="skip" onclick="skipIntro()">Intro Atla</div>
+  <div class="videoContainer">
+    <iframe id="video" class="video" allowfullscreen></iframe>
+    <div id="skip" class="overlay" onclick="skipIntro()">Intro Atla</div>
+    <div id="next" class="overlay" onclick="nextEpisode()">Sonraki ▶</div>
   </div>
   <div id="episodes" class="episodes"></div>
 </div>
 
 <script>
 const data = {
-  s1: ["_JKNDCvPc3A","4jHoj5geuJ8","50jkNwbNYFs"],
-  s3: ["xa2flcw","xa2fu2s","xa2fu2u","xa2w11a"]
+ s1: ["_JKNDCvPc3A"],
+ s2: [],
+ s3: ["xa2flcw","xa2fu2s","xa2fu2u"],
+ s4: []
 };
 
-const titles = {s1:"Metal Fusion", s3:"Metal Fury"};
-const images = {
-  s1:"https://i.imgur.com/L8otzmh.jpg",
-  s3:"https://i.imgur.com/Ttv8Bg9.jpg"
-};
+const titles = {s1:"Metal Fusion", s2:"Metal Masters", s3:"Metal Fury", s4:"Shogun Steel"};
 
-let currentSeason=null;
-let currentEpisode=0;
+let currentSeason=null, currentEpisode=0, currentTime=0, timer;
+let dmPlayer=null; // 🔥 Dailymotion player
 
 function loadHome(){
-  let main=document.getElementById("main");
-  main.innerHTML="";
-
-  Object.keys(data).forEach(s=>{
-    let row=document.createElement("div");
-    row.className="row";
-
-    let title=document.createElement("h2");
-    title.innerText=titles[s];
-
-    let card=document.createElement("div");
-    card.className="card";
-    card.style.backgroundImage=`url(${images[s]})`;
-    card.onclick=()=>openSeason(s);
-
-    row.appendChild(title);
-    row.appendChild(card);
-    main.appendChild(row);
-  });
+ const main=document.getElementById("main");
+ main.innerHTML="";
+ Object.keys(data).forEach(s=>{
+  const row=document.createElement("div");
+  const card=document.createElement("div");
+  card.className="card";
+  card.onclick=()=>openSeason(s);
+  row.appendChild(card);
+  main.appendChild(row);
+ });
 }
 
 function openSeason(s){
-  currentSeason=s;
-  currentEpisode=0;
-
-  document.getElementById("main").style.display="none";
-  document.getElementById("playerPage").style.display="flex";
-
-  loadEpisodes();
-  play();
+ currentSeason=s;
+ currentEpisode=0;
+ currentTime=0;
+ document.getElementById("main").style.display="none";
+ document.getElementById("playerPage").style.display="flex";
+ loadEpisodes();
+ play();
 }
 
 function loadEpisodes(){
-  let ep=document.getElementById("episodes");
-  ep.innerHTML="";
-
-  data[currentSeason].forEach((v,i)=>{
-    let d=document.createElement("div");
-    d.className="ep"+(i===currentEpisode?" active":"");
-    d.innerText="Bölüm "+(i+1);
-    d.onclick=()=>{currentEpisode=i; play();}
-    ep.appendChild(d);
-  });
+ const ep=document.getElementById("episodes");
+ ep.innerHTML="";
+ data[currentSeason].forEach((v,i)=>{
+  const d=document.createElement("div");
+  d.className="ep"+(i===currentEpisode?" active":"");
+  d.innerText="Bölüm "+(i+1);
+  d.onclick=()=>{currentEpisode=i; play();}
+  ep.appendChild(d);
+ });
 }
 
 function play(start=0){
-  let v=data[currentSeason][currentEpisode];
-  let iframe=document.getElementById("video");
+ clearInterval(timer);
+ currentTime=start;
 
-  if(currentSeason==="s1"){
-    iframe.src=`https://www.youtube.com/embed/${v}?autoplay=1&start=${start}`;
-  } else {
-    iframe.src=`https://www.dailymotion.com/embed/video/${v}?autoplay=1`;
+ let v=data[currentSeason][currentEpisode];
 
-    if(start>0){
-      setTimeout(()=>{
-        iframe.contentWindow.postMessage(JSON.stringify({
-          command:"seek",
-          parameters:[start]
-        }),"*");
-      },1000);
+ if(currentSeason==="s1"||currentSeason==="s2"){
+  // YOUTUBE
+  document.getElementById("video").src =
+   `https://www.youtube.com/embed/${v}?autoplay=1&start=${start}`;
+ }
+ else{
+  // 🔥 DAILYMOTION PLAYER API
+  dmPlayer = DM.player(document.getElementById("video"), {
+    video: v,
+    params: {autoplay: true}
+  });
+
+  dmPlayer.addEventListener("apiready", () => {
+    if(start > 0){
+      dmPlayer.seek(start); // 🔥 BURASI FIX
     }
+  });
+ }
+
+ document.getElementById("skip").style.display="none";
+
+ timer=setInterval(()=>{
+  currentTime++;
+
+  if(currentTime>1){
+    document.getElementById("skip").style.display="block";
   }
 
-  document.getElementById("skip").style.display="block";
+  if(currentTime>=44){
+    document.getElementById("skip").style.display="none";
+  }
+
+ },1000);
 }
 
 function skipIntro(){
-  let iframe=document.getElementById("video");
+ currentTime=44;
 
-  if(currentSeason==="s1"){
-    play(44);
-  } else {
-    iframe.contentWindow.postMessage(JSON.stringify({
-      command:"seek",
-      parameters:[44]
-    }),"*");
-  }
+ if(currentSeason==="s1"||currentSeason==="s2"){
+   play(44);
+ }
+ else{
+   if(dmPlayer){
+     dmPlayer.seek(44); // 🔥 BAŞA SARMAZ ARTIK
+   }
+ }
+}
 
-  document.getElementById("skip").style.display="none";
+function nextEpisode(){
+ if(currentEpisode<data[currentSeason].length-1){
+  currentEpisode++;
+  play();
+ }
 }
 
 function goHome(){
-  document.getElementById("main").style.display="block";
-  document.getElementById("playerPage").style.display="none";
-  document.getElementById("video").src="";
+ document.getElementById("main").style.display="block";
+ document.getElementById("playerPage").style.display="none";
+ document.getElementById("video").src="";
+ clearInterval(timer);
 }
 
 loadHome();
